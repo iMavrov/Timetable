@@ -83,7 +83,6 @@ public class GeneticAlgorithm<T extends Speciment> {
         
         crossSelector.updateSpeciments(population);
         transferSelector.updateSpeciments(population);
-        mutationSelector.updateSpeciments(population);
         
         //// Reproduce species
         
@@ -115,6 +114,8 @@ public class GeneticAlgorithm<T extends Speciment> {
         }
         
         //// Mutate offspring
+        
+        mutationSelector.updateSpeciments(offspring);
         
         int speciesToMutate = (int)(POPULATION_SIZE * MUTATION_RATE);
         while (speciesToMutate > 0) {
