@@ -4,95 +4,104 @@
  */
 package university;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 /**
  *
  * @author Mavrov
  */
-public class Subject {
+public class Subject implements IPersistable {
     
     public Subject() {
-        subjectID = -1;
-        fullName = "Предмет";
-        shortName = "";
-        yearIndex = -1;
-        semesterIndex = -1;
-        lectureHourCount = 0;
-        seminarHourCount = 0;
-        labHourCount = 0;
-        subjectType = SubjectType.MANDATORY;
-        department = new Department();
+        
+    }
+    
+    public Subject(
+            String subjectCode,
+            String subjectFullName,
+            String subjectShortName,
+            SubjectType subjectType,
+            String subjectDepartment,
+            int subjectLectureHours,
+            int subjectSeminarHours,
+            int subjectLabHours) {
+        code = subjectCode;
+        
+        fullName = subjectFullName;
+        shortName = subjectShortName;
+    
+        type = subjectType;
+        department = subjectDepartment;
+        
+        lectureHourCount = subjectLectureHours;
+        seminarHourCount = subjectSeminarHours;
+        labHourCount = subjectLabHours;
+    }
+    
+    public String getCode() {
+        return code;
+    }
+    
+    public void setCode(String subjectCode) {
+        code = subjectCode;
     }
 
     public String getFullName() {
         return fullName;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setFullName(String subjectFullName) {
+        fullName = subjectFullName;
     }
 
     public String getShortName() {
         return shortName;
     }
 
-    public void setShortName(String shortName) {
-        this.shortName = shortName;
+    public void setShortName(String subjectShortName) {
+        shortName = subjectShortName;
     }
 
-    public int getYearIndex() {
-        return yearIndex;
+    public SubjectType getSubjectType() {
+        return type;
     }
 
-    public void setYearIndex(int yearIndex) {
-        this.yearIndex = yearIndex;
+    public void setSubjectType(SubjectType subjectType) {
+        type = subjectType;
     }
 
-    public int getSemesterIndex() {
-        return semesterIndex;
+    public String getDepartment() {
+        return department;
     }
 
-    public void setSemesterIndex(int semesterIndex) {
-        this.semesterIndex = semesterIndex;
+    public void setDepartment(String subjectDepartment) {
+        department = subjectDepartment;
     }
 
     public int getLectureHourCount() {
         return lectureHourCount;
     }
 
-    public void setLectureHourCount(int lectureHourCount) {
-        this.lectureHourCount = lectureHourCount;
+    public void setLectureHourCount(int subjectLectureHourCount) {
+        lectureHourCount = subjectLectureHourCount;
     }
 
     public int getSeminarHourCount() {
         return seminarHourCount;
     }
 
-    public void setSeminarHourCount(int seminarHourCount) {
-        this.seminarHourCount = seminarHourCount;
+    public void setSeminarHourCount(int subjectSeminarHourCount) {
+        seminarHourCount = subjectSeminarHourCount;
     }
 
     public int getLabHourCount() {
         return labHourCount;
     }
 
-    public void setLabHourCount(int labHourCount) {
-        this.labHourCount = labHourCount;
-    }
-
-    public SubjectType getSubjectType() {
-        return subjectType;
-    }
-
-    public void setSubjectType(SubjectType subjectType) {
-        this.subjectType = subjectType;
-    }
-
-    public Department getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
+    public void setLabHourCount(int subjectLabHourCount) {
+        labHourCount = subjectLabHourCount;
     }
     
     @Override
@@ -100,18 +109,57 @@ public class Subject {
         return fullName;
     }
     
-    private int subjectID;
+    @Override
+    public boolean load(BufferedReader reader) throws IOException {
+        code = reader.readLine();
+        
+        fullName = reader.readLine();
+        shortName = reader.readLine();
+        
+        type = SubjectType.valueOf(reader.readLine());
+        department = reader.readLine();
+        
+        lectureHourCount = Integer.valueOf(reader.readLine());
+        seminarHourCount = Integer.valueOf(reader.readLine());
+        labHourCount = Integer.valueOf(reader.readLine());
+        
+        return true;
+    }
+
+    @Override
+    public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(code);
+        writer.newLine();
+        
+        writer.write(fullName);
+        writer.newLine();
+        writer.write(shortName);
+        writer.newLine();
+        
+        writer.write(type.toString());
+        writer.newLine();
+        writer.write(department);
+        writer.newLine();
+        
+        writer.write(String.valueOf(lectureHourCount));
+        writer.newLine();
+        writer.write(String.valueOf(seminarHourCount));
+        writer.newLine();
+        writer.write(String.valueOf(labHourCount));
+        writer.newLine();
+        
+        return true;
+    }
+    
+    private String code;
     
     private String fullName;
     private String shortName;
     
-    private int yearIndex;
-    private int semesterIndex;
+    private SubjectType type;
+    private String department;
     
     private int lectureHourCount;
     private int seminarHourCount;
     private int labHourCount;
-    
-    private SubjectType subjectType;
-    private Department department;
 }

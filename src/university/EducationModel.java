@@ -8,8 +8,8 @@ package university;
  *
  * @author Mavrov
  */
-public enum EducationType {
+public enum EducationModel {
     REGULAR,
-    PART_TIME,
+    OFFSITE,
     DISTANCE
 }

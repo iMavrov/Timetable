@@ -4,57 +4,44 @@
  */
 package university;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  *
  * @author Mavrov
  */
-public class Room {
+public class Room implements IPersistable {
     
     public Room() {
-    
+        id = University.INVALID_ID;
+        attributes = new HashSet<>();
     }
     
     public Room(
-        int roomID,
-        FacultyType faculty, 
-        String name, 
-        RoomType type, 
-        int capacity, 
-        int computerCount, 
-        BoardType board, 
-        boolean hasMultimedia, 
-        boolean isActive) {
-        this.roomID = roomID;
-        this.faculty = faculty;
-        this.name = name;
-        this.type = type;
-        this.capacity = capacity;
-        this.computerCount = computerCount;
-        this.board = board;
-        this.hasMultimedia = hasMultimedia;
-        this.isActive = isActive;
+            int roomID,
+            String buildingName, 
+            String roomName, 
+            RoomType roomType, 
+            int roomCapacity,
+            Set<String> roomAttributes) {
+        id = roomID;
+        building = buildingName;
+        name = roomName;
+        type = roomType;
+        capacity = roomCapacity;
+        attributes = roomAttributes;
     }
     
-    public int getRoomID() {
-        return roomID;
-    }
-    
-    public void setRoomID(int newRoomID) {
-        if (roomID == -1) {
-            roomID = newRoomID;
-        }
-    }
-    
-    public FacultyType getFaculty() {
-        return faculty;
+    public String getBuilding() {
+        return building;
     }
 
-    public void setFaculty(FacultyType faculty) {
-        this.faculty = faculty;
+    public void setBuilding(String buildingName) {
+        building = buildingName;
     }
 
     public String getName() {
@@ -80,122 +67,95 @@ public class Room {
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
-
-    public int getComputerCount() {
-        return computerCount;
-    }
-
-    public void setComputerCount(int computerCount) {
-        this.computerCount = computerCount;
-    }
-
-    public BoardType getBoard() {
-        return board;
-    }
-
-    public void setBoard(BoardType board) {
-        this.board = board;
-    }
-
-    public boolean hasMultimedia() {
-        return hasMultimedia;
-    }
-
-    public void setHasMultimedia(boolean hasMultimedia) {
-        this.hasMultimedia = hasMultimedia;
-    }
     
-    public boolean isActive() {
-        return isActive;
+    public boolean hasAttribute(String attribute) {
+        return attributes.contains(attribute);
     }
 
-    public void setActive(boolean isActive) {
-        this.isActive = isActive;
+    public boolean addAttribute(String attribute) {
+        return attributes.add(attribute);
+    }
+
+    public boolean removeAttribute(String attribute) {
+        return attributes.remove(attribute);
     }
     
     @Override
-    public boolean equals(Object other) {
-        if (other == null) {
+    public boolean equals(Object o) {
+        if (o == null) {
             return false;
         }
         
-        if (other instanceof Room) {
-            Room otherRoom = (Room)other;
-            return (name.equals(otherRoom.name) && (faculty == otherRoom.faculty));
+        if (getClass() != o.getClass()) {
+            return false;
         }
         
-        return false;
+        final Room other = (Room)o;
+        return id == other.id;
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() + faculty.ordinal() * 117;
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return building + ": " + name;
     }
     
     @Override
-    public String toString() {
-        return name;
-    }
-    
-    public boolean save(BufferedWriter writer) {
-        try {
-            writer.write(String.valueOf(roomID));
+    public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(String.valueOf(id));
+        writer.newLine();
+        
+        writer.write(building);
+        writer.newLine();
+        writer.write(name);
+        writer.newLine();
+        writer.write(type.toString());
+        writer.newLine();
+        writer.write(String.valueOf(capacity));
+        writer.newLine();
+        
+        writer.write(String.valueOf(attributes.size()));
+        writer.newLine();
+        for (String attribute: attributes) {
+            writer.write(attribute);
             writer.newLine();
-            writer.write(faculty.toString());
-            writer.newLine();
-            writer.write(name);
-            writer.newLine();
-            writer.write(type.toString());
-            writer.newLine();
-            writer.write(String.valueOf(capacity));
-            writer.newLine();
-            writer.write(String.valueOf(computerCount));
-            writer.newLine();
-            writer.write(board.toString());
-            writer.newLine();
-            writer.write(String.valueOf(hasMultimedia));
-            writer.newLine();
-            writer.write(String.valueOf(isActive));
-            writer.newLine();
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.err.println(e.getStackTrace());
-            return false;
         }
         
         return true;
     }
     
-    public boolean load(BufferedReader reader) {
-        try {
-            roomID = Integer.valueOf(reader.readLine());
-            faculty = FacultyType.valueOf(reader.readLine());
-            name = reader.readLine();
-            type = RoomType.valueOf(reader.readLine());
-            capacity = Integer.valueOf(reader.readLine());
-            computerCount = Integer.valueOf(reader.readLine());
-            board = BoardType.valueOf(reader.readLine());
-            hasMultimedia = Boolean.valueOf(reader.readLine());
-            isActive = Boolean.valueOf(reader.readLine());
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.err.println(e.getStackTrace());
-            return false;
+    @Override
+    public boolean load(BufferedReader reader) throws IOException {
+        id = Integer.valueOf(reader.readLine());
+        
+        building = reader.readLine();
+        name = reader.readLine();
+        type = RoomType.valueOf(reader.readLine());
+        capacity = Integer.valueOf(reader.readLine());
+        
+        int attributeCount = Integer.valueOf(reader.readLine());
+        while (attributeCount > 0) {
+            attributes.add(reader.readLine());
+            --attributeCount;
         }
         
         return true;
     }
     
-    // Unique ID
-    private int roomID;
+    // Key
+    private int id;
     
     // Room info
-    private FacultyType faculty;
+    private String building;
     private String name;
+    
     private RoomType type;
     private int capacity;
-    private int computerCount;
-    private BoardType board;
-    private boolean hasMultimedia;
-    private boolean isActive;
+    
+    // Extended room info
+    Set<String> attributes;
 }

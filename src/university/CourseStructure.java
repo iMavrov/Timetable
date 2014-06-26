@@ -4,6 +4,9 @@
  */
 package university;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,28 +14,63 @@ import java.util.List;
  *
  * @author Mavrov
  */
-public class CourseStructure {
+public class CourseStructure implements IPersistable {
     
-    public CourseStructure(Specialty courseSpecialty, int courseYear) {
-        specialty = courseSpecialty;
-        year = courseYear;
-        subjects = new ArrayList<>(courseSpecialty.getSemesterCount());
+    public CourseStructure() {
+        subjects = new ArrayList<>();
     }
     
-    public void setSemesterSubjects(int semesterIndex, List<Subject> semesterSubjects) {
-        subjects.add(semesterIndex, semesterSubjects);
+    public CourseStructure(List<List<Subject>> structureSubjects) {
+        subjects = structureSubjects;
+    }
+
+    public List<List<Subject>> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(List<List<Subject>> structureSubjects) {
+        subjects = structureSubjects;
     }
     
     @Override
-    public String toString() {
-        return specialty.getName() + " " + String.valueOf(year);
+    public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(String.valueOf(subjects.size()));
+        writer.newLine();
+        
+        for (List<Subject> semesterSubjects : subjects) {
+            writer.write(String.valueOf(semesterSubjects.size()));
+            writer.newLine();
+            
+            for (Subject subject : semesterSubjects) {
+                subject.save(writer);
+            }
+        }
+        
+        return true;
     }
     
-    // Unique ID
-    private int courseStructureID;
+    @Override
+    public boolean load(BufferedReader reader) throws IOException {
+        int semesterCount = Integer.valueOf(reader.readLine());
+        while (semesterCount > 0) {
+            List<Subject> semesterSubjects = new ArrayList<>();
+            
+            int subjectCount = Integer.valueOf(reader.readLine());
+            while (subjectCount > 0) {
+                Subject newSubject = new Subject();
+                newSubject.load(reader);
+                semesterSubjects.add(newSubject);
+                
+                --subjectCount;
+            }
+            
+            subjects.add(semesterSubjects);
+                    
+            --semesterCount;
+        }
+        
+        return true;
+    }
     
-    // Members
-    private Specialty specialty;
-    private int year;
-    private List< List<Subject> > subjects;
+    private List<List<Subject>> subjects;
 }

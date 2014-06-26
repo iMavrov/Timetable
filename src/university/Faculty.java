@@ -8,7 +8,7 @@ package university;
  *
  * @author Mavrov
  */
-public enum FacultyType {
+public enum Faculty {
     FMI,
     FC,
     FPh,
@@ -27,14 +27,14 @@ public enum FacultyType {
         return facultyNames;
     }
     
-    public static FacultyType getFacultyType(int index) {
+    public static Faculty getFacultyType(int index) {
         if (facultyTypes == null) {
-            facultyTypes = FacultyType.values();
+            facultyTypes = Faculty.values();
         }
         
         return facultyTypes[index];
     }
     
     private static String[] facultyNames = null;
-    private static FacultyType[] facultyTypes = null;
+    private static Faculty[] facultyTypes = null;
 }

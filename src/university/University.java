@@ -4,19 +4,22 @@
  */
 package university;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  *
  * @author Mavrov
  */
-public class University {
+public class University implements IPersistable {
+    
+    public static final int INVALID_ID = -1;
     
     public static University getInstance() {
         if (university == null) {
@@ -25,7 +28,104 @@ public class University {
         
         return university;
     }
+    
+    @Override
+    public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(String.valueOf(DATABASE_VERSION));
+        writer.newLine();
+        
+        writer.write(String.valueOf(buildings.size()));
+        writer.newLine();
+        for (String building : buildings) {
+            writer.write(building);
+            writer.newLine();
+        }
+        
+        writer.write(String.valueOf(rooms.size()));
+        writer.newLine();
+        for (Room room : rooms) {
+            room.save(writer);
+        }
+        
+        writer.write(String.valueOf(faculties.size()));
+        writer.newLine();
+        for (String building : faculties) {
+            writer.write(building);
+            writer.newLine();
+        }
+        
+        writer.write(String.valueOf(departments.size()));
+        writer.newLine();
+        for (String building : departments) {
+            writer.write(building);
+            writer.newLine();
+        }
+        
+        writer.write(String.valueOf(lecturers.size()));
+        writer.newLine();
+        for (Lecturer lecturer : lecturers) {
+            lecturer.save(writer);
+        }
 
+        writer.write(String.valueOf(programs.size()));
+        writer.newLine();
+        for (Program program : programs) {
+            program.save(writer);
+        }
+        
+        return true;
+    }
+    
+    @Override
+    public boolean load(BufferedReader reader) throws IOException {
+        float fileVersion = Float.valueOf(reader.readLine());
+        // TODO: Check version match
+        
+        int buildingCount = Integer.valueOf(reader.readLine());
+        while (buildingCount > 0) {
+            buildings.add(reader.readLine());
+            --buildingCount;
+        }
+
+        int roomCount = Integer.valueOf(reader.readLine());
+        while (roomCount > 0) {
+            Room newRoom = new Room();
+            newRoom.load(reader);
+            rooms.add(newRoom);
+            --roomCount;
+        }
+        
+        int facultyCount = Integer.valueOf(reader.readLine());
+        while (facultyCount > 0) {
+            faculties.add(reader.readLine());
+            --facultyCount;
+        }
+        
+        int departmentCount = Integer.valueOf(reader.readLine());
+        while (departmentCount > 0) {
+            departments.add(reader.readLine());
+            --departmentCount;
+        }
+        
+        int lecturerCount = Integer.valueOf(reader.readLine());
+        while (lecturerCount > 0) {
+            Lecturer newLecturer = new Lecturer();
+            newLecturer.load(reader);
+            lecturers.add(newLecturer);
+            --lecturerCount;
+        }
+        
+        int programCount = Integer.valueOf(reader.readLine());
+        while (programCount > 0) {
+            Program newProgram = new Program();
+            newProgram.load(reader);
+            programs.add(newProgram);
+            --programCount;
+        }
+
+        return true;
+    }
+/*
     public List<Class> getSubjects() {
         return subjects;
     }
@@ -38,7 +138,7 @@ public class University {
         return rooms;
     }
     
-    public List<Room> getRooms(FacultyType facultyType, RoomType roomType) {
+    public List<Room> getRooms(Faculty facultyType, RoomType roomType) {
         List<Room> filteredRooms = new ArrayList<>();
         for (Room room : rooms) {
             if (room.getFaculty() == facultyType && room.getType() == roomType) {
@@ -99,84 +199,55 @@ public class University {
     public void updateCourseStructure(CourseStructure newCourseStructure) throws IllegalArgumentException {
         
     }
+    */
     
     @Override
     protected Object clone() {
         return university;
     }
     
-    private static final String dataFilename = "university.txt";
+    private static final String DATABASE_FILEPATH = "university.txt";
+    private static final float DATABASE_VERSION = 1.0f;
     
     private static University university = null;
     
-    private List<Class> subjects;
-    private List<Lecturer> lecturers;
-    private List<Room> rooms;
-    private List<Subgroup> subgroups;
-    private List<Department> departments;
-    private List<Specialty> specialties;
+    // Room view
+    private Set<String> buildings;
+    private Set<Room> rooms;
+    
+    // Lecturer view
+    private Set<String> faculties;
+    private Set<String> departments;
+    private Set<Lecturer> lecturers;
+    
+    // Program view
+    private Set<Program> programs;
+    
+    // Student view ???
     
     private static void initializeUniversity() {
         university = new University();
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(DATABASE_FILEPATH))) {
+            university.load(reader);
+        } catch (FileNotFoundException e) {
+            // TODO: Do something about this error!
+        } catch (IOException e) {
+            // TODO: Do something about this error!
+        }
     }
     
     private University() {
-        // Init data using dataFilename
-        rooms = new ArrayList<>();
-        departments = new ArrayList<>();
-        specialties = new ArrayList<>();
-        specialties.add(new Specialty("Компютърни науки", DegreeType.BACHELOR, EducationType.REGULAR, 8));
-        
-        load();
-    }
+        // Room view
+        buildings = new HashSet<>();
+        rooms = new HashSet<>();
     
-    private boolean save() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(dataFilename))) {
-            writer.write(String.valueOf(rooms.size()));
-            writer.newLine();
-            for (Room room : rooms) {
-                room.save(writer);
-            }
-            
-            writer.write(String.valueOf(departments.size()));
-            writer.newLine();
-            for (Department department : departments) {
-                writer.write(department.toString());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.err.println(e.getStackTrace());
-            return false;
-        }
-        
-        return true;
-    }
+        // Lecturer view
+        faculties = new HashSet<>();
+        departments = new HashSet<>();
+        lecturers = new HashSet<>();
     
-    private boolean load() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(dataFilename))) {
-            String elementCountString = reader.readLine();
-            int roomCount = Integer.valueOf(elementCountString);
-            for(int roomIndex = 0; roomIndex < roomCount; ++roomIndex) {
-                Room newRoom = new Room();
-                boolean isRoomLoaded = newRoom.load(reader);
-                if (isRoomLoaded) {
-                    rooms.add(newRoom);
-                }
-            }
-            
-            elementCountString = reader.readLine();
-            int departmentCount = Integer.valueOf(elementCountString);
-            for(int departmentIndex = 0; departmentIndex < departmentCount; ++departmentIndex) {
-                Department newDepartment = new Department(reader.readLine());
-                departments.add(newDepartment);
-            }
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.err.println(e.getStackTrace());
-            return false;
-        }
-        
-        return true;
+        // Student view
+        programs = new HashSet<>();
     }
 }

@@ -8,7 +8,7 @@ package university;
  *
  * @author Mavrov
  */
-public enum DegreeType {
+public enum EducationDegree {
     BACHELOR,
     MASTER
 }

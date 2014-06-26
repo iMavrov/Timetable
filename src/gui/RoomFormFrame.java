@@ -93,7 +93,7 @@ public class RoomFormFrame extends JFrame {
         
         // Create UI components
         JLabel buildingLabel = new JLabel("Сграда:");
-        String[] buildingOptions = FacultyType.getFacultyTypeNames();
+        String[] buildingOptions = Faculty.getFacultyTypeNames();
         buildingCombo = new JComboBox(buildingOptions);
         buildingCombo.setSelectedIndex(0);
         
@@ -244,7 +244,7 @@ public class RoomFormFrame extends JFrame {
 
         Room newRoom = new Room(
             roomID,
-            FacultyType.getFacultyType(buildingCombo.getSelectedIndex()),
+            Faculty.getFacultyType(buildingCombo.getSelectedIndex()),
             roomNameField.getText(),
             RoomType.getRoomType(roomTypeCombo.getSelectedIndex()),
             (Integer) roomCapacityField.getValue(),

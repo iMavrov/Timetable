@@ -56,7 +56,7 @@ public class RoomSelectorFrame extends JFrame {
         
         // Create UI components
         JLabel buildingLabel = new JLabel("Сграда:");
-        String[] buildingOptions = FacultyType.getFacultyTypeNames();
+        String[] buildingOptions = Faculty.getFacultyTypeNames();
         buildingCombo = new JComboBox(buildingOptions);
         buildingCombo.setSelectedIndex(0);
         buildingCombo.addActionListener(new ActionListener() {
@@ -148,7 +148,7 @@ public class RoomSelectorFrame extends JFrame {
     
     private void updateList() {
         List<Room> filteredRooms = University.getInstance().getRooms(
-            FacultyType.getFacultyType(buildingCombo.getSelectedIndex()),
+            Faculty.getFacultyType(buildingCombo.getSelectedIndex()),
             RoomType.getRoomType(roomTypeCombo.getSelectedIndex()));
         
         DefaultListModel<Room> roomListModel = new DefaultListModel<>();
