@@ -103,6 +103,11 @@ public class Program implements IPersistable {
     }
     
     @Override
+    public String toString() {
+        return name + String.valueOf(year);
+    }
+    
+    @Override
     public boolean save(BufferedWriter writer) throws IOException {
         writer.write(String.valueOf(id));
         writer.newLine();

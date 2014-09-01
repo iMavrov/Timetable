@@ -7,6 +7,8 @@ package university;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  *
@@ -16,17 +18,20 @@ public class Lecturer implements IPersistable {
     
     public Lecturer() {
         id = University.INVALID_ID;
+        attributes = new HashSet<>();
     }
     
     public Lecturer(
             int lecturerID,
             String lecturerFaculty, 
             String lecturerDepartment,
-            String lecturerName) {
+            String lecturerName,
+            Set<String> lecturerAttributes) {
         id = lecturerID;
         faculty = lecturerFaculty;
         department = lecturerDepartment;
         name = lecturerName;
+        attributes.addAll(lecturerAttributes);
     }
 
     public String getFaculty() {
@@ -51,6 +56,18 @@ public class Lecturer implements IPersistable {
 
     public void setName(String lecturerName) {
         name = lecturerName;
+    }
+    
+    public boolean hasAttribute(String attribute) {
+        return attributes.contains(attribute);
+    }
+
+    public boolean addAttribute(String attribute) {
+        return attributes.add(attribute);
+    }
+
+    public boolean removeAttribute(String attribute) {
+        return attributes.remove(attribute);
     }
     
     @Override
@@ -98,6 +115,11 @@ public class Lecturer implements IPersistable {
         return id;
     }
     
+    @Override
+    public String toString() {
+        return name;
+    }
+    
     // Key
     private int id;
     
@@ -107,4 +129,7 @@ public class Lecturer implements IPersistable {
     
     // Lecturer info
     private String name;
+    
+    // Lecturer class requirements
+    private Set<String> attributes;
 }

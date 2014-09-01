@@ -7,6 +7,7 @@ package university;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  *
@@ -108,6 +109,29 @@ public class Subject implements IPersistable {
     public String toString() {
         return fullName;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        
+        final Subject other = (Subject)o;
+        return code.equals(other.code);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 23 * hash + Objects.hashCode(this.code);
+        return hash;
+    }
+    
+    
     
     @Override
     public boolean load(BufferedReader reader) throws IOException {

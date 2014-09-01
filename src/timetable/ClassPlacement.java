@@ -24,4 +24,5 @@ public class ClassPlacement {
     private byte day;
     private byte hour;
     private short roomID;
+    private boolean lock; // TODO: Maybe change to enum for state
 }

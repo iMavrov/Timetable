@@ -29,6 +29,20 @@ public class University implements IPersistable {
         return university;
     }
     
+    public boolean save() {
+        boolean isSaveSuccessful = false;
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATABASE_FILEPATH))) {
+            isSaveSuccessful = university.save(writer);
+        } catch (FileNotFoundException e) {
+            // TODO: Do something about this error!
+        } catch (IOException e) {
+            // TODO: Do something about this error!
+        }
+        
+        return isSaveSuccessful;
+    }
+    
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
         writer.write(String.valueOf(DATABASE_VERSION));
