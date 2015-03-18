@@ -9,63 +9,65 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  *
  * @author Mavrov
  */
-public class Room implements IPersistable {
+public class Room implements IPersistable, IKeyHolder {
     
     public Room() {
-        id = University.INVALID_ID;
+        buildingID = University.INVALID_ID;
+        name = "";
+        type = RoomType.LECTURE_HALL;
+        capacity = 0;
         attributes = new HashSet<>();
     }
     
     public Room(
-            int roomID,
-            String buildingName, 
+            int roomBuildingID, 
             String roomName, 
             RoomType roomType, 
             int roomCapacity,
             Set<String> roomAttributes) {
-        id = roomID;
-        building = buildingName;
+        buildingID = roomBuildingID;
         name = roomName;
         type = roomType;
         capacity = roomCapacity;
         attributes = roomAttributes;
     }
     
-    public String getBuilding() {
-        return building;
+    public int getBuildingID() {
+        return buildingID;
     }
 
-    public void setBuilding(String buildingName) {
-        building = buildingName;
+    public void setBuildingID(int newBuildingID) {
+        buildingID = newBuildingID;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String newName) {
+        name = newName;
     }
 
     public RoomType getType() {
         return type;
     }
 
-    public void setType(RoomType type) {
-        this.type = type;
+    public void setType(RoomType newType) {
+        type = newType;
     }
 
     public int getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
+    public void setCapacity(int newCapacity) {
+        capacity = newCapacity;
     }
     
     public boolean hasAttribute(String attribute) {
@@ -91,25 +93,26 @@ public class Room implements IPersistable {
         }
         
         final Room other = (Room)o;
-        return id == other.id;
+        return (buildingID == other.buildingID) && name.equalsIgnoreCase(other.name);
     }
 
     @Override
     public int hashCode() {
-        return id;
+        int hash = 3;
+        hash = 83 * hash + this.buildingID;
+        hash = 83 * hash + Objects.hashCode(this.name);
+        return hash;
     }
 
     @Override
     public String toString() {
-        return building + ": " + name;
+        Building building = University.getInstance().getBuilding(buildingID);
+        return building.getName() + ": " + name;
     }
     
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
-        writer.write(String.valueOf(id));
-        writer.newLine();
-        
-        writer.write(building);
+        writer.write(String.valueOf(buildingID));
         writer.newLine();
         writer.write(name);
         writer.newLine();
@@ -130,9 +133,7 @@ public class Room implements IPersistable {
     
     @Override
     public boolean load(BufferedReader reader) throws IOException {
-        id = Integer.valueOf(reader.readLine());
-        
-        building = reader.readLine();
+        buildingID = Integer.valueOf(reader.readLine());
         name = reader.readLine();
         type = RoomType.valueOf(reader.readLine());
         capacity = Integer.valueOf(reader.readLine());
@@ -146,11 +147,13 @@ public class Room implements IPersistable {
         return true;
     }
     
-    // Key
-    private int id;
-    
+    @Override
+    public boolean hasBadKey() {
+        return (buildingID == University.INVALID_ID) || name.isEmpty();
+    }
+       
     // Room info
-    private String building;
+    private int buildingID;
     private String name;
     
     private RoomType type;

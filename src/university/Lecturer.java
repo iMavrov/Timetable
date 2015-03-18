@@ -9,45 +9,46 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  *
  * @author Mavrov
  */
-public class Lecturer implements IPersistable {
+public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder {
     
     public Lecturer() {
-        id = University.INVALID_ID;
+        facultyID = University.INVALID_ID;
+        departmentID = University.INVALID_ID;
+        name = "";
         attributes = new HashSet<>();
     }
     
     public Lecturer(
-            int lecturerID,
-            String lecturerFaculty, 
-            String lecturerDepartment,
+            int lecturerFacultyID, 
+            int lecturerDepartmentID,
             String lecturerName,
             Set<String> lecturerAttributes) {
-        id = lecturerID;
-        faculty = lecturerFaculty;
-        department = lecturerDepartment;
+        facultyID = lecturerFacultyID;
+        departmentID = lecturerDepartmentID;
         name = lecturerName;
-        attributes.addAll(lecturerAttributes);
+        attributes = lecturerAttributes;
     }
 
-    public String getFaculty() {
-        return faculty;
+    public int getFacultyID() {
+        return facultyID;
     }
 
-    public void setFaculty(String lecturerFaculty) {
-        faculty = lecturerFaculty;
+    public void setFaculty(int newLecturerFacultyID) {
+        facultyID = newLecturerFacultyID;
     }
 
-    public String getDepartment() {
-        return department;
+    public int getDepartmentID() {
+        return departmentID;
     }
 
-    public void setDepartment(String lecturerDepartment) {
-        department = lecturerDepartment;
+    public void setDepartmentID(int lecturerDepartmentID) {
+        departmentID = lecturerDepartmentID;
     }
 
     public String getName() {
@@ -56,44 +57,6 @@ public class Lecturer implements IPersistable {
 
     public void setName(String lecturerName) {
         name = lecturerName;
-    }
-    
-    public boolean hasAttribute(String attribute) {
-        return attributes.contains(attribute);
-    }
-
-    public boolean addAttribute(String attribute) {
-        return attributes.add(attribute);
-    }
-
-    public boolean removeAttribute(String attribute) {
-        return attributes.remove(attribute);
-    }
-    
-    @Override
-    public boolean save(BufferedWriter writer) throws IOException {
-        writer.write(id);
-        writer.newLine();
-        
-        writer.write(faculty);
-        writer.newLine();
-        writer.write(department);
-        writer.newLine();
-        writer.write(name);
-        writer.newLine();
-
-        return true;
-    }
-    
-    @Override
-    public boolean load(BufferedReader reader) throws IOException {
-        id = Integer.valueOf(reader.readLine());
-        
-        faculty = reader.readLine();
-        department = reader.readLine();
-        name = reader.readLine();
-
-        return true;
     }
     
     @Override
@@ -107,12 +70,15 @@ public class Lecturer implements IPersistable {
         }
         
         final Lecturer other = (Lecturer)o;
-        return id == other.id;
+        return (departmentID == other.departmentID) && name.equalsIgnoreCase(other.name);
     }
 
     @Override
     public int hashCode() {
-        return id;
+        int hash = 3;
+        hash = 41 * hash + this.departmentID;
+        hash = 41 * hash + Objects.hashCode(this.name);
+        return hash;
     }
     
     @Override
@@ -120,12 +86,63 @@ public class Lecturer implements IPersistable {
         return name;
     }
     
-    // Key
-    private int id;
+    @Override
+    public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(String.valueOf(facultyID));
+        writer.newLine();
+        writer.write(String.valueOf(departmentID));
+        writer.newLine();
+        writer.write(name);
+        writer.newLine();
+        
+        writer.write(String.valueOf(attributes.size()));
+        writer.newLine();
+        for (String attribute: attributes) {
+            writer.write(attribute);
+            writer.newLine();
+        }
+
+        return true;
+    }
+    
+    @Override
+    public boolean load(BufferedReader reader) throws IOException {
+        facultyID = Integer.valueOf(reader.readLine());
+        departmentID = Integer.valueOf(reader.readLine());
+        name = reader.readLine();
+
+        int attributeCount = Integer.valueOf(reader.readLine());
+        while (attributeCount > 0) {
+            attributes.add(reader.readLine());
+            --attributeCount;
+        }
+        
+        return true;
+    }
+    
+    @Override
+    public boolean hasBadKey() {
+        return (departmentID == University.INVALID_ID) || name.isEmpty();
+    }
+    
+    @Override
+    public boolean hasAttribute(String attribute) {
+        return attributes.contains(attribute);
+    }
+
+    @Override
+    public boolean addAttribute(String attribute) {
+        return attributes.add(attribute);
+    }
+
+    @Override
+    public boolean removeAttribute(String attribute) {
+        return attributes.remove(attribute);
+    }
     
     // Lecturer position info
-    private String faculty;
-    private String department;
+    private int facultyID;
+    private int departmentID;
     
     // Lecturer info
     private String name;

@@ -4,9 +4,9 @@
  */
 package university;
 
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -16,7 +16,14 @@ import java.util.Objects;
 public class Subject implements IPersistable {
     
     public Subject() {
-        
+        code = "";
+        fullName = "";
+        shortName = "";
+        type = SubjectType.MANDATORY;
+        departmentID = University.INVALID_ID;
+        lectureHourCount = 0;
+        seminarHourCount = 0;
+        labHourCount = 0;
     }
     
     public Subject(
@@ -24,7 +31,7 @@ public class Subject implements IPersistable {
             String subjectFullName,
             String subjectShortName,
             SubjectType subjectType,
-            String subjectDepartment,
+            int subjectDepartmentID,
             int subjectLectureHours,
             int subjectSeminarHours,
             int subjectLabHours) {
@@ -34,7 +41,7 @@ public class Subject implements IPersistable {
         shortName = subjectShortName;
     
         type = subjectType;
-        department = subjectDepartment;
+        departmentID = subjectDepartmentID;
         
         lectureHourCount = subjectLectureHours;
         seminarHourCount = subjectSeminarHours;
@@ -73,36 +80,68 @@ public class Subject implements IPersistable {
         type = subjectType;
     }
 
-    public String getDepartment() {
-        return department;
+    public int getDepartment() {
+        return departmentID;
     }
 
-    public void setDepartment(String subjectDepartment) {
-        department = subjectDepartment;
+    public void setDepartment(int subjectDepartmentID) {
+        departmentID = subjectDepartmentID;
     }
 
-    public int getLectureHourCount() {
-        return lectureHourCount;
+    public boolean hasClass(UniversityClassType classType) {
+        boolean hasClass = false;
+        
+        switch (classType) {
+            case LECTION: {
+                hasClass = (0 < lectureHourCount);
+                break;
+            }
+            case LABORATORY: {
+                hasClass = (0 < labHourCount);
+                break;
+            }
+            case SEMINAR: {
+                hasClass = (0 < seminarHourCount);
+                break;
+            }
+        }
+        
+        return hasClass;
+    }
+    
+    public int getClassHourCount(UniversityClassType classType) {
+        int hourCount = 0;
+        
+        switch (classType) {
+            case LECTION: {
+                hourCount = lectureHourCount;
+                break;
+            }
+            case LABORATORY: {
+                hourCount = lectureHourCount;
+                break;
+            }
+            case SEMINAR: {
+                hourCount = seminarHourCount;
+                break;
+            }
+        }
+        
+        return hourCount;
     }
 
-    public void setLectureHourCount(int subjectLectureHourCount) {
-        lectureHourCount = subjectLectureHourCount;
-    }
-
-    public int getSeminarHourCount() {
-        return seminarHourCount;
-    }
-
-    public void setSeminarHourCount(int subjectSeminarHourCount) {
-        seminarHourCount = subjectSeminarHourCount;
-    }
-
-    public int getLabHourCount() {
-        return labHourCount;
-    }
-
-    public void setLabHourCount(int subjectLabHourCount) {
-        labHourCount = subjectLabHourCount;
+    public void setClassHourCount(UniversityClassType classType, int hourCount) {
+        switch (classType) {
+            case LECTION: {
+                lectureHourCount = hourCount;
+            }
+            case LABORATORY: {
+                labHourCount = hourCount;
+            }
+            case SEMINAR: {
+                seminarHourCount = hourCount;
+            }
+        }
     }
     
     @Override
@@ -130,9 +169,7 @@ public class Subject implements IPersistable {
         hash = 23 * hash + Objects.hashCode(this.code);
         return hash;
     }
-    
-    
-    
+
     @Override
     public boolean load(BufferedReader reader) throws IOException {
         code = reader.readLine();
@@ -141,7 +178,7 @@ public class Subject implements IPersistable {
         shortName = reader.readLine();
         
         type = SubjectType.valueOf(reader.readLine());
-        department = reader.readLine();
+        departmentID = Integer.valueOf(reader.readLine());
         
         lectureHourCount = Integer.valueOf(reader.readLine());
         seminarHourCount = Integer.valueOf(reader.readLine());
@@ -162,7 +199,7 @@ public class Subject implements IPersistable {
         
         writer.write(type.toString());
         writer.newLine();
-        writer.write(department);
+        writer.write(String.valueOf(departmentID));
         writer.newLine();
         
         writer.write(String.valueOf(lectureHourCount));
@@ -181,7 +218,7 @@ public class Subject implements IPersistable {
     private String shortName;
     
     private SubjectType type;
-    private String department;
+    private int departmentID;
     
     private int lectureHourCount;
     private int seminarHourCount;

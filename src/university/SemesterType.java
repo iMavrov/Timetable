@@ -12,7 +12,7 @@ public enum SemesterType {
     WINTER,
     SUMMER;
     
-    public SemesterType getSemesterType(int semesterIndex) {
+    public static SemesterType getSemesterType(int semesterIndex) {
         if (semesterIndex % 2 == 0) {
             return WINTER;
         } else {

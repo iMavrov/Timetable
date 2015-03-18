@@ -1,31 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
+
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.util.Objects;
 
 /**
  *
  * @author Mavrov
  */
-public class Department {
-    /*
-    ALGEBRA,
-    ANALYTICAL_MECHANICS,
-    COMPLEX_ANALYSIS_AND_TOPOLOGY,
-    COMPUTER_INFORMACTICS,
-    COMPUTER_SYSTEMS,
-    DIFFERENTIAL_EQUASIONS,
-    EDUCATION_IN_MATHEMATICS_AND_INFORMATICS,
-    GEOMETRY,
-    INFORMATION_TECHNOLOGIES,
-    MATHEMATICAL_ANALYSIS,
-    MATHEMATICAL_LOGIC_AND_APPLICATIONS,
-    NUMERICAL_METHODS_AND_ALGORITHMS,
-    PROBABILITY_OPERATIONS_REASEARCH_STATISTICS,
-    SOFTWARE_TECHNOLOGIES,
-    LABORATORY_MATHEMATICAL_MODELING_IN_ECONOMICS;
-    */
+public class Department implements IPersistable, IKeyHolder {
     
     public Department() {
         name = "";
@@ -35,9 +19,58 @@ public class Department {
         name = departmentName;
     }
     
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String newName) {
+        name = newName;
+    }
+    
     @Override
     public String toString() {
         return name;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        
+        final Department other = (Department)o;
+        return name.equalsIgnoreCase(other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+    
+    @Override
+    public boolean load(BufferedReader reader) throws IOException {
+        name = reader.readLine();
+        
+        return true;
+    }
+
+    @Override
+    public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(name);
+        writer.newLine();
+        
+        return true;
+    }
+    
+    @Override
+    public boolean hasBadKey() {
+        return name.isEmpty();
     }
     
     private String name;

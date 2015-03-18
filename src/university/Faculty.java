@@ -1,40 +1,77 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
+
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.util.Objects;
 
 /**
  *
  * @author Mavrov
  */
-public enum Faculty {
-    FMI,
-    FC,
-    FPh,
-    B2;
+public class Faculty implements IPersistable, IKeyHolder {
     
-    public static String[] getFacultyTypeNames() {
-        if (facultyNames == null) {
-            facultyNames = new String[] {
-                "ФМИ",
-                "ХФ",
-                "ФзФ",
-                "Блок 2"            
-            };
-        }
-        
-        return facultyNames;
+    public Faculty() {
+        name = "";
     }
     
-    public static Faculty getFacultyType(int index) {
-        if (facultyTypes == null) {
-            facultyTypes = Faculty.values();
-        }
-        
-        return facultyTypes[index];
+    public Faculty(String facultyName) {
+        name = facultyName;
     }
     
-    private static String[] facultyNames = null;
-    private static Faculty[] facultyTypes = null;
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String newName) {
+        name = newName;
+    }
+    
+    @Override
+    public String toString() {
+        return name;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        
+        final Faculty other = (Faculty)o;
+        return name.equalsIgnoreCase(other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+    
+    @Override
+    public boolean load(BufferedReader reader) throws IOException {
+        name = reader.readLine();
+        
+        return true;
+    }
+
+    @Override
+    public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(name);
+        writer.newLine();
+        
+        return true;
+    }
+    
+    @Override
+    public boolean hasBadKey() {
+        return name.isEmpty();
+    }
+    
+    private String name;
 }

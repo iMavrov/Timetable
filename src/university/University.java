@@ -1,17 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
 
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  *
@@ -28,6 +24,279 @@ public class University implements IPersistable {
         
         return university;
     }
+    
+    public boolean addBuilding(Building newBuilding) {
+        if (newBuilding == null) {
+            return false;
+        }
+        
+        if (newBuilding.hasBadKey()) {
+            return false;
+        }
+        
+        if (buildings.contains(newBuilding)) {
+            return false;
+        }
+        
+        return buildings.add(newBuilding);
+    }
+    
+    public boolean updateBuilding(Building updatedBuilding) {
+        if (updatedBuilding == null) {
+            return false;
+        }
+        
+        if (updatedBuilding.hasBadKey()) {
+            return false;
+        }
+        
+        int firstIndex = buildings.indexOf(updatedBuilding);
+        int lastIndex = buildings.lastIndexOf(updatedBuilding);
+        
+        if ((firstIndex == -1) || (lastIndex == -1) || (firstIndex != lastIndex)) {
+            return false;
+        }
+                
+        buildings.set(firstIndex, updatedBuilding);
+        return true;
+    }
+    
+    public Building getBuilding(int buildingID) {
+        if (buildingID < 0 || buildings.size() <= buildingID) {
+            return null;
+        }
+        
+        return buildings.get(buildingID);
+    }
+    
+    public boolean addRoom(Room newRoom) {
+        if (newRoom == null) {
+            return false;
+        }
+        
+        if (newRoom.hasBadKey()) {
+            return false;
+        }
+        
+        if (rooms.contains(newRoom)) {
+            return false;
+        }
+        
+        return rooms.add(newRoom);
+    }
+    
+    public boolean updateRoom(Room updatedRoom) {
+        if (updatedRoom == null) {
+            return false;
+        }
+        
+        if (updatedRoom.hasBadKey()) {
+            return false;
+        }
+        
+        int firstIndex = buildings.indexOf(updatedRoom);
+        int lastIndex = buildings.lastIndexOf(updatedRoom);
+        
+        if ((firstIndex == -1) || (lastIndex == -1) || (firstIndex != lastIndex)) {
+            return false;
+        }
+                
+        rooms.set(firstIndex, updatedRoom);
+        return true;
+    }
+    
+    public Room getRoom(int roomID) {
+        if (roomID < 0 || rooms.size() <= roomID) {
+            return null;
+        }
+        
+        return rooms.get(roomID);
+    }
+    
+    public boolean addFaculty(Faculty newFaculty) {
+        if (newFaculty == null) {
+            return false;
+        }
+        
+        if (newFaculty.hasBadKey()) {
+            return false;
+        }
+        
+        if (faculties.contains(newFaculty)) {
+            return false;
+        }
+        
+        return faculties.add(newFaculty);
+    }
+    
+    public boolean updateFaculty(Faculty updatedFaculty) {
+        if (updatedFaculty == null) {
+            return false;
+        }
+        
+        if (updatedFaculty.hasBadKey()) {
+            return false;
+        }
+        
+        int firstIndex = faculties.indexOf(updatedFaculty);
+        int lastIndex = faculties.lastIndexOf(updatedFaculty);
+        
+        if ((firstIndex == -1) || (lastIndex == -1) || (firstIndex != lastIndex)) {
+            return false;
+        }
+                
+        faculties.set(firstIndex, updatedFaculty);
+        return true;
+    }
+    
+    public Faculty getFaculty(int facultyID) {
+        if (facultyID < 0 || faculties.size() <= facultyID) {
+            return null;
+        }
+        
+        return faculties.get(facultyID);
+    }
+    
+    public boolean addDepartment(Department newDepartment) {
+        if (newDepartment == null) {
+            return false;
+        }
+        
+        if (newDepartment.hasBadKey()) {
+            return false;
+        }
+        
+        if (departments.contains(newDepartment)) {
+            return false;
+        }
+        
+        return departments.add(newDepartment);
+    }
+    
+    public boolean updateDepartment(Department updatedDepartment) {
+        if (updatedDepartment == null) {
+            return false;
+        }
+        
+        if (updatedDepartment.hasBadKey()) {
+            return false;
+        }
+        
+        int firstIndex = departments.indexOf(updatedDepartment);
+        int lastIndex = departments.lastIndexOf(updatedDepartment);
+        
+        if ((firstIndex == -1) || (lastIndex == -1) || (firstIndex != lastIndex)) {
+            return false;
+        }
+                
+        departments.set(firstIndex, updatedDepartment);
+        return true;
+    }
+    
+    public Department getDepartment(int departmentID) {
+        if (departmentID < 0 || departments.size() <= departmentID) {
+            return null;
+        }
+        
+        return departments.get(departmentID);
+    }
+    
+    public boolean addLecturer(Lecturer newLecturer) {
+        if (newLecturer == null) {
+            return false;
+        }
+        
+        if (newLecturer.hasBadKey()) {
+            return false;
+        }
+        
+        if (lecturers.contains(newLecturer)) {
+            return false;
+        }
+        
+        return lecturers.add(newLecturer);
+    }
+    
+    public boolean updateLecturer(Lecturer updatedLecturer) {
+        if (updatedLecturer == null) {
+            return false;
+        }
+        
+        if (updatedLecturer.hasBadKey()) {
+            return false;
+        }
+        
+        ArrayList<Integer> matches = new ArrayList<>();
+        for (int lecturerIndex = 0; lecturerIndex < lecturers.size(); ++lecturerIndex) {
+            if (lecturers.get(lecturerIndex).equals(updatedLecturer)) {
+                matches.add(lecturerIndex);
+            }
+        }
+        
+        if (matches.size() != 1) {
+            return false;
+        }
+                
+        lecturers.set(matches.get(0), updatedLecturer);
+        
+        return true;
+    }
+    
+    public Lecturer getLecturer(int lecturerID) {
+        if (lecturerID < 0 || lecturers.size() <= lecturerID) {
+            return null;
+        }
+        
+        return lecturers.get(lecturerID);
+    }
+    
+    public boolean addProgram(Program newProgram) {
+        if (newProgram == null) {
+            return false;
+        }
+        
+        if (newProgram.hasBadKey()) {
+            return false;
+        }
+        
+        if (programs.contains(newProgram)) {
+            return false;
+        }
+        
+        return programs.add(newProgram);
+    }
+    
+    public boolean updatePrograms(Program updatedProgram) {
+        if (updatedProgram == null) {
+            return false;
+        }
+        
+        if (updatedProgram.hasBadKey()) {
+            return false;
+        }
+        
+        int firstIndex = programs.indexOf(updatedProgram);
+        int lastIndex = programs.lastIndexOf(updatedProgram);
+        
+        if ((firstIndex == -1) || (lastIndex == -1) || (firstIndex != lastIndex)) {
+            return false;
+        }
+                
+        programs.set(firstIndex, updatedProgram);
+        return true;
+    }
+    
+    public Program getProgram(int programID) {
+        if (programID < 0 || programs.size() <= programID) {
+            return null;
+        }
+        
+        return programs.get(programID);
+    }
+    
+    // http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection
+    // public List<Room> getFilteredRooms(RoomFilter filter);
+    // public List<Lecturer> getFilteredLecturers(LecturerFilter filter);
     
     public boolean save() {
         boolean isSaveSuccessful = false;
@@ -50,9 +319,8 @@ public class University implements IPersistable {
         
         writer.write(String.valueOf(buildings.size()));
         writer.newLine();
-        for (String building : buildings) {
-            writer.write(building);
-            writer.newLine();
+        for (Building building : buildings) {
+            building.save(writer);
         }
         
         writer.write(String.valueOf(rooms.size()));
@@ -63,16 +331,14 @@ public class University implements IPersistable {
         
         writer.write(String.valueOf(faculties.size()));
         writer.newLine();
-        for (String building : faculties) {
-            writer.write(building);
-            writer.newLine();
+        for (Faculty faculty : faculties) {
+            faculty.save(writer);
         }
         
         writer.write(String.valueOf(departments.size()));
         writer.newLine();
-        for (String building : departments) {
-            writer.write(building);
-            writer.newLine();
+        for (Department department : departments) {
+            department.save(writer);
         }
         
         writer.write(String.valueOf(lecturers.size()));
@@ -93,127 +359,66 @@ public class University implements IPersistable {
     @Override
     public boolean load(BufferedReader reader) throws IOException {
         float fileVersion = Float.valueOf(reader.readLine());
-        // TODO: Check version match
+        if (fileVersion != DATABASE_VERSION) {
+            return false;
+        }
         
         int buildingCount = Integer.valueOf(reader.readLine());
-        while (buildingCount > 0) {
-            buildings.add(reader.readLine());
+        while (0 < buildingCount) {
+            Building newBuilding = new Building();
+            newBuilding.load(reader);
+            
+            buildings.add(newBuilding);
             --buildingCount;
         }
 
         int roomCount = Integer.valueOf(reader.readLine());
-        while (roomCount > 0) {
+        while (0 < roomCount) {
             Room newRoom = new Room();
             newRoom.load(reader);
+            
             rooms.add(newRoom);
             --roomCount;
         }
         
         int facultyCount = Integer.valueOf(reader.readLine());
-        while (facultyCount > 0) {
-            faculties.add(reader.readLine());
+        while (0 < facultyCount) {
+            Faculty newFaculty = new Faculty();
+            newFaculty.load(reader);
+            
+            faculties.add(newFaculty);
             --facultyCount;
         }
         
         int departmentCount = Integer.valueOf(reader.readLine());
-        while (departmentCount > 0) {
-            departments.add(reader.readLine());
+        while (0 < departmentCount) {
+            Department newDepartment = new Department();
+            newDepartment.load(reader);
+            
+            departments.add(newDepartment);
             --departmentCount;
         }
         
         int lecturerCount = Integer.valueOf(reader.readLine());
-        while (lecturerCount > 0) {
+        while (0 < lecturerCount) {
             Lecturer newLecturer = new Lecturer();
             newLecturer.load(reader);
+            
             lecturers.add(newLecturer);
             --lecturerCount;
         }
         
         int programCount = Integer.valueOf(reader.readLine());
-        while (programCount > 0) {
+        while (0 < programCount) {
             Program newProgram = new Program();
             newProgram.load(reader);
+            
             programs.add(newProgram);
             --programCount;
         }
 
         return true;
     }
-/*
-    public List<Class> getSubjects() {
-        return subjects;
-    }
-    
-    public int getSubjectsCount() {
-        return getInstance().subjects.size();
-    }
-    
-    public List<Room> getRooms() {
-        return rooms;
-    }
-    
-    public List<Room> getRooms(Faculty facultyType, RoomType roomType) {
-        List<Room> filteredRooms = new ArrayList<>();
-        for (Room room : rooms) {
-            if (room.getFaculty() == facultyType && room.getType() == roomType) {
-                filteredRooms.add(room);
-            }
-        }
-        
-        return filteredRooms;
-    }
-    
-    public int getRoomCount() {
-        return getInstance().rooms.size();
-    }
-    
-    public void addNewRoom(Room newRoom) throws IllegalArgumentException {
-        if (rooms.contains(newRoom)) {
-            throw new IllegalArgumentException("Зала/стая със същото име вече съществува в тази сграда!");
-        }
-        
-        // TODO: use a variable to determine the next unique number
-        newRoom.setRoomID(rooms.size());
-        rooms.add(newRoom);
-        
-        save();
-    }
-    
-    public void updateRoom(Room newRoom) throws IllegalArgumentException {
-        int oldRoomIndex = -1;
-        
-        for (int roomIndex = 0; roomIndex < rooms.size(); ++roomIndex) {
-            if (rooms.get(roomIndex).equals(newRoom) && 
-                rooms.get(roomIndex).getRoomID() != newRoom.getRoomID()) {
-                throw new IllegalArgumentException("Зала/стая със същото име вече съществува в тази сграда!");
-            }
-            
-            if (rooms.get(roomIndex).getRoomID() == newRoom.getRoomID()) {
-                oldRoomIndex = roomIndex;
-            }
-        }
-        
-        rooms.set(oldRoomIndex, newRoom);
-        
-        save();
-    }
-    
-    public List<Department> getDepartments() {
-        return departments;
-    }
-    
-    public List<Specialty> getSpecialties() {
-        return specialties;
-    }
-    
-    public void addNewCourseStructure(CourseStructure newCourseStructure) throws IllegalArgumentException {
-        
-    }
-    
-    public void updateCourseStructure(CourseStructure newCourseStructure) throws IllegalArgumentException {
-        
-    }
-    */
     
     @Override
     protected Object clone() {
@@ -226,18 +431,16 @@ public class University implements IPersistable {
     private static University university = null;
     
     // Room view
-    private Set<String> buildings;
-    private Set<Room> rooms;
+    private List<Building> buildings;
+    private List<Room> rooms;
     
     // Lecturer view
-    private Set<String> faculties;
-    private Set<String> departments;
-    private Set<Lecturer> lecturers;
+    private List<Faculty> faculties;
+    private List<Department> departments;
+    private List<Lecturer> lecturers;
     
     // Program view
-    private Set<Program> programs;
-    
-    // Student view ???
+    private List<Program> programs;
     
     private static void initializeUniversity() {
         university = new University();
@@ -253,15 +456,15 @@ public class University implements IPersistable {
     
     private University() {
         // Room view
-        buildings = new HashSet<>();
-        rooms = new HashSet<>();
+        buildings = new ArrayList<>();
+        rooms = new ArrayList<>();
     
         // Lecturer view
-        faculties = new HashSet<>();
-        departments = new HashSet<>();
-        lecturers = new HashSet<>();
+        faculties = new ArrayList<>();
+        departments = new ArrayList<>();
+        lecturers = new ArrayList<>();
     
         // Student view
-        programs = new HashSet<>();
+        programs = new ArrayList<>();
     }
 }

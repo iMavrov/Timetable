@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
 
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  *
@@ -17,7 +13,7 @@ import java.util.List;
 public class CourseStructure implements IPersistable {
     
     public CourseStructure() {
-        subjects = new ArrayList<>();
+        subjects = null;
     }
     
     public CourseStructure(List<List<Subject>> structureSubjects) {

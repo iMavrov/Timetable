@@ -10,7 +10,7 @@ package university;
  */
 public enum UniversityClassType {
     LECTION,
-    LAB,
+    LABORATORY,
     SEMINAR,
     
 }
