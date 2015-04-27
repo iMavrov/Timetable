@@ -125,6 +125,16 @@ public class Semester implements IPersistable {
         return roomAvailability.get(roomID);
     }
     
+    public boolean setRoomAvailability(int roomID, Availability newAvailability) {
+        if (!roomAvailability.containsKey(roomID)) {
+            return false;
+        }
+        
+        roomAvailability.put(roomID, newAvailability);
+        
+        return true;
+    }
+    
     public boolean addLecturer(int lecturerID, Availability newLecturerAvailability) {
         if (lecturerAvailability.containsKey(lecturerID)) {
             return false;
@@ -146,6 +156,16 @@ public class Semester implements IPersistable {
     
     public Availability getLecturerAvailability(int lecturerID) {
         return lecturerAvailability.get(lecturerID);
+    }
+    
+    public boolean setLecturerAvailability(int lecturerID, Availability newAvailability) {
+        if (!lecturerAvailability.containsKey(lecturerID)) {
+            return false;
+        }
+        
+        lecturerAvailability.put(lecturerID, newAvailability);
+        
+        return true;
     }
     
     public boolean addSemesterLecturer(Lecturer newLecturer, Availability newSemesterLecturerAvailability) {
@@ -208,6 +228,16 @@ public class Semester implements IPersistable {
     
     public Availability getSemesterLecturerAvailability(int semesterLecturerID) {
         return semesterLecturerAvailability.get(semesterLecturerID);
+    }
+    
+    public boolean setSemesterLecturerAvailability(int semesterLecturerID, Availability newAvailability) {
+        if (!semesterLecturerAvailability.containsKey(semesterLecturerID)) {
+            return false;
+        }
+
+        lecturerAvailability.put(semesterLecturerID, newAvailability);
+
+        return true;
     }
     
     public boolean addProgram(int programID, StudentDistribution programStudentDistribution) {
@@ -385,6 +415,18 @@ public class Semester implements IPersistable {
         return studentDistribution.get(programID);
     }
     
+    public boolean setStudentDistribution(int programID, StudentDistribution newDistribution) {
+        if (!studentDistribution.containsKey(programID)) {
+            return false;
+        }
+        
+        boolean programRemoved = removeProgram(programID);
+        
+        boolean programAdded = addProgram(programID, newDistribution);
+        
+        return (programRemoved && programAdded);
+    }
+    
     public boolean addSemesterSubject(Subject newSubject, int capacity) {
         if (newSubject == null) {
             return false;
@@ -446,6 +488,16 @@ public class Semester implements IPersistable {
     
     public int getSemesterSubjectsCapacity(int semesterSubjectID) {
         return semesterSubjectCapacity.get(semesterSubjectID);
+    }
+    
+    public boolean setSemesterSubjectCapacity(int semesterSubjectID, int newCapacity) {
+        if (!semesterSubjectCapacity.containsKey(semesterSubjectID)) {
+            return false;
+        }
+        
+        semesterSubjectCapacity.put(semesterSubjectID, newCapacity);
+        
+        return true;
     }
     
     @Override
