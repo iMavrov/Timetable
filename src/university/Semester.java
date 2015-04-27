@@ -35,7 +35,8 @@ public class Semester implements IPersistable {
         groups = new ArrayList<>();
         studentAvailability = new HashMap<>();
     
-        semesterSubjects = new ArrayList<>();
+        addedSemesterSubjects = 0;
+        semesterSubjects = new HashMap<>();
         semesterSubjectCapacity = new HashMap<>();
 
         classes = new ArrayList<>();
@@ -67,7 +68,8 @@ public class Semester implements IPersistable {
         groups = new ArrayList<>();
         studentAvailability = new HashMap<>();
     
-        semesterSubjects = new ArrayList<>();
+        addedSemesterSubjects = 0;
+        semesterSubjects = new HashMap<>();
         semesterSubjectCapacity = new HashMap<>();
 
         classes = new ArrayList<>();
@@ -336,8 +338,43 @@ public class Semester implements IPersistable {
     }
     
     public boolean removeProgram(int programID) {
-        StudentDistribution distribution = studentDistribution.remove(programID);
-        return (distribution != null);
+        if (!studentDistribution.containsKey(programID)) {
+            return false;
+        }
+        
+        // Remove programID
+        studentDistribution.remove(programID);
+        
+        // Remove groupIDs
+        List<Integer> groupsToRemove = new ArrayList<>();
+        
+        for (int groupIndex = 0; groupIndex < groups.size(); ++groupIndex) {
+            if (groups.get(groupIndex).getProgramID() == programID) {
+                groupsToRemove.add(groupIndex); 
+            }
+        }
+        
+        for (int groupIndex : groupsToRemove) {
+            groups.remove(groupIndex);
+            studentAvailability.remove(groupIndex);
+            studentsToClass.remove(groupIndex);
+        }
+        
+        // Remove classIDs
+        List<Integer> classesToRemove = new ArrayList<>();
+        
+        for (int classIndex = 0; classIndex < classes.size(); ++classIndex) {
+            if (classes.get(classIndex).getProgramID() == programID) {
+                classesToRemove.add(classIndex);
+            }
+        }
+        
+        for (int classIndex : classesToRemove) {
+            classes.remove(classIndex);
+            classToStudents.remove(classIndex);
+        }
+
+        return true;
     }
     
     public Set<Integer> getPrograms() {
@@ -346,6 +383,69 @@ public class Semester implements IPersistable {
     
     public StudentDistribution getStudentDistribution(int programID) {
         return studentDistribution.get(programID);
+    }
+    
+    public boolean addSemesterSubject(Subject newSubject, int capacity) {
+        if (newSubject == null) {
+            return false;
+        }
+        
+        if (newSubject.hasBadKey()) {
+            return false;
+        }
+        
+        if (semesterSubjects.containsValue(newSubject)) {
+            return false;
+        }
+        
+        ++addedSemesterSubjects;
+        
+        int newSemesterSubjectID = -addedSemesterSubjects;
+        semesterSubjects.put(newSemesterSubjectID, newSubject);
+        semesterSubjectCapacity.put(newSemesterSubjectID, capacity);
+
+        return true;
+    }
+    
+    public boolean updateSemesterSubject(Subject updatedSubject, int updatedCapacity) {
+        if (updatedSubject == null) {
+            return false;
+        }
+        
+        if (updatedSubject.hasBadKey()) {
+            return false;
+        }
+        
+        ArrayList<Integer> matches = new ArrayList<>();
+        for (Entry<Integer, Subject> entry : semesterSubjects.entrySet()) {
+            if (entry.getValue().equals(updatedSubject)) {
+                matches.add(entry.getKey());
+            }
+        }
+        
+        if (matches.size() != 1) {
+            return false;
+        }
+
+        semesterSubjects.put(matches.get(0), updatedSubject);
+        semesterSubjectCapacity.put(matches.get(0), updatedCapacity);
+            
+        return true;
+    }
+    
+    public boolean removeSemesterSubject(int subjectID) {
+        semesterSubjects.remove(subjectID);
+        Integer capacity = semesterSubjectCapacity.remove(subjectID);
+        
+        return (capacity != null);
+    }
+    
+    public Set<Integer> getSemesterSubjects() {
+        return semesterSubjects.keySet();
+    }
+    
+    public int getSemesterSubjectsCapacity(int semesterSubjectID) {
+        return semesterSubjectCapacity.get(semesterSubjectID);
     }
     
     @Override
@@ -429,12 +529,16 @@ public class Semester implements IPersistable {
             --studentAvailabilityItemsCount;
         }
     
+        addedSemesterSubjects = Integer.valueOf(reader.readLine());
+        
         int semesterSubjectsCount = Integer.valueOf(reader.readLine());
         while (0 < semesterSubjectsCount) {
+            int semesterSubjectID = Integer.valueOf(reader.readLine());
+            
             Subject subject = new Subject();
             subject.load(reader);
             
-            semesterSubjects.add(subject);
+            semesterSubjects.put(semesterSubjectID, subject);
             --semesterSubjectsCount;
         }
         
@@ -630,10 +734,16 @@ public class Semester implements IPersistable {
             entry.getValue().save(writer);
         }
         
+        writer.write(String.valueOf(addedSemesterSubjects));
+        writer.newLine();
+        
         writer.write(String.valueOf(semesterSubjects.size()));
         writer.newLine();
-        for (Subject subject : semesterSubjects) {
-            subject.save(writer);
+        for (Entry<Integer, Subject> entry : semesterSubjects.entrySet()) {
+            writer.write(String.valueOf(entry.getKey()));
+            writer.newLine();
+            
+            entry.getValue().save(writer);
         }
         
         writer.write(String.valueOf(semesterSubjectCapacity.size()));
@@ -770,8 +880,11 @@ public class Semester implements IPersistable {
     // Group ID to Availability
     private Map<Integer, Availability> studentAvailability;
     
-    // Semester specific subjects and their capacity
-    private List<Subject> semesterSubjects;
+    // Count of the number of added semester subjects. Helps for the unique ID system.
+    private int addedSemesterSubjects;
+    // Semester specific subjects to SubjectID.
+    private Map<Integer, Subject> semesterSubjects;
+    // Semester specific subject ID to capacity.
     private Map<Integer, Integer> semesterSubjectCapacity;
     
     // Classes to place in the timetable

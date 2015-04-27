@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * @author Mavrov
  */
-public class Subject implements IPersistable {
+public class Subject implements IPersistable, IKeyHolder {
     
     public Subject() {
         code = "";
@@ -212,6 +212,19 @@ public class Subject implements IPersistable {
         return true;
     }
     
+    @Override
+    public boolean hasBadKey() {
+        if (code == null) {
+            return true;
+        }
+        
+        if (code.isEmpty()) {
+            return true;
+        }
+        
+        return false;
+    }
+        
     private String code;
     
     private String fullName;
