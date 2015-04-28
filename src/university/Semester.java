@@ -141,12 +141,15 @@ public class Semester implements IPersistable {
         }
         
         lecturerAvailability.put(lecturerID, newLecturerAvailability);
+        lecturerToClass.put(lecturerID, new ArrayList<Integer>());
         
         return true;
     }
     
     public boolean removeLecturer(int lecturerID) {
         Availability availability = lecturerAvailability.remove(lecturerID);
+        lecturerToClass.remove(lecturerID);
+        
         return (availability != null);
     }
     
@@ -186,6 +189,8 @@ public class Semester implements IPersistable {
         int newSemesterLecturerID = -addedSemesterLecturers;
         semesterLecturers.put(newSemesterLecturerID, newLecturer);
         semesterLecturerAvailability.put(newSemesterLecturerID, newSemesterLecturerAvailability);
+        
+        lecturerToClass.put(newSemesterLecturerID, new ArrayList<Integer>());
 
         return true;
     }
@@ -218,6 +223,7 @@ public class Semester implements IPersistable {
     public boolean removeSemesterLecturer(int lecturerID) {
         semesterLecturers.remove(lecturerID);
         Availability availability = semesterLecturerAvailability.remove(lecturerID);
+        lecturerToClass.remove(lecturerID);
         
         return (availability != null);
     }
@@ -309,6 +315,8 @@ public class Semester implements IPersistable {
                             
                             classToStudents.put(classID, groupIDs);
                             studentsToClass.get(groupID).add(classID);
+                            
+                            classToLecturer.put(classID, new ArrayList<Integer>());
                         }
 
                         boolean subjectHasLab = subject.hasClass(UniversityClassType.LABORATORY);
@@ -329,6 +337,8 @@ public class Semester implements IPersistable {
                             
                             classToStudents.put(classID, groupIDs);
                             studentsToClass.get(groupID).add(classID);
+                            
+                            classToLecturer.put(classID, new ArrayList<Integer>());
                         }
                     }
                 }
@@ -359,6 +369,8 @@ public class Semester implements IPersistable {
                         for (Integer groupID : newGroupIDs) {
                             studentsToClass.get(groupID).add(classID);
                         }
+                        
+                        classToLecturer.put(classID, new ArrayList<Integer>());
                     }
                 }
             }
@@ -402,6 +414,7 @@ public class Semester implements IPersistable {
         for (int classIndex : classesToRemove) {
             classes.remove(classIndex);
             classToStudents.remove(classIndex);
+            classToLecturer.remove(classIndex);
         }
 
         return true;
@@ -711,6 +724,50 @@ public class Semester implements IPersistable {
             timetable.put(classID, placement);
             --timetableItemsCount;
         }
+        
+        return true;
+    }
+    
+    public boolean assignLecturerToClass(int lecturerID, int classID) {
+        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
+        List<Integer> lecturers = classToLecturer.get(classID);
+        
+        if ((lecturerClasses == null) || (lecturers == null)) {
+            return false;
+        }
+        
+        if (lecturerClasses.contains(classID)) {
+            return false;
+        }
+        
+        if (lecturers.contains(lecturerID)) {
+            return false;
+        }
+        
+        lecturerClasses.add(classID);
+        lecturers.add(lecturerID);
+        
+        return true;
+    }
+    
+    public boolean unassignLecturerFromClass(int lecturerID, int classID) {
+        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
+        List<Integer> lecturers = classToLecturer.get(classID);
+        
+        if ((lecturerClasses == null) || (lecturers == null)) {
+            return false;
+        }
+        
+        if (!lecturerClasses.contains(classID)) {
+            return false;
+        }
+        
+        if (!lecturers.contains(lecturerID)) {
+            return false;
+        }
+        
+        lecturerClasses.remove(classID);
+        lecturers.remove(lecturerID);
         
         return true;
     }
