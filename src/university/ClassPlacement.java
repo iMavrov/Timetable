@@ -48,6 +48,8 @@ public class ClassPlacement implements IPersistable {
     
     // When? Hour of the week [0 - 167]
     private int start;
+    private int end; // Inclusive
+    private int duration;
     
     // Where? The room's ID in which the class is to take place.
     private int roomID;

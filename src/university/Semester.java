@@ -513,6 +513,131 @@ public class Semester implements IPersistable {
         return true;
     }
     
+    public boolean assignLecturerToClass(int lecturerID, int classID) {
+        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
+        List<Integer> lecturers = classToLecturer.get(classID);
+        
+        if ((lecturerClasses == null) || (lecturers == null)) {
+            return false;
+        }
+        
+        if (lecturerClasses.contains(classID)) {
+            return false;
+        }
+        
+        if (lecturers.contains(lecturerID)) {
+            return false;
+        }
+        
+        lecturerClasses.add(classID);
+        lecturers.add(lecturerID);
+        
+        return true;
+    }
+    
+    public boolean unassignLecturerFromClass(int lecturerID, int classID) {
+        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
+        List<Integer> lecturers = classToLecturer.get(classID);
+        
+        if ((lecturerClasses == null) || (lecturers == null)) {
+            return false;
+        }
+        
+        if (!lecturerClasses.contains(classID)) {
+            return false;
+        }
+        
+        if (!lecturers.contains(lecturerID)) {
+            return false;
+        }
+        
+        lecturerClasses.remove(classID);
+        lecturers.remove(lecturerID);
+        
+        return true;
+    }
+    
+    public boolean removeClass(int classID) {
+        if (classID < 0 || classes.size() <= classID) {
+            return false;
+        }
+        
+        Integer boxedClassID = new Integer(classID); 
+        
+        UniversityClass classToRemove = classes.remove(classID);
+        
+        ClassPlacement classPlacement = timetable.remove(classID);
+        int day = classPlacement.getStartWeekHour() / 24;
+        int hour = classPlacement.getStartWeekHour() % 24;
+        
+        if (classToRoom.containsKey(classID)) {
+            int roomID = classToRoom.remove(classID);
+            
+            roomToClass.get(roomID).remove(boxedClassID);
+            
+            roomAvailability.get(roomID).setAvailability(day, hour, true);
+        }
+        
+        if (classToLecturer.containsKey(classID)) {
+            List<Integer> classLecturers = classToLecturer.remove(classID);
+            
+            for (int lecturerID : classLecturers) {
+                lecturerToClass.get(lecturerID).remove(boxedClassID);
+                
+                lecturerAvailability.get(lecturerID).setAvailability(day, hour, true);
+            }
+        }
+        
+        if (classToStudents.containsKey(classID)) {
+            List<Integer> classGroups = classToStudents.remove(classID);
+            
+            for (int groupID : classGroups) {
+                studentsToClass.get(groupID).remove(boxedClassID);
+                
+                studentAvailability.get(groupID).setAvailability(day, hour, true);
+            }
+        }
+
+        return true;
+    }
+    
+    public boolean mergeClasses(int classID1, int classID2) {
+        if (classID1 < 0 || classID2 < 0 || classes.size() <= classID1 || classes.size() <= classID2) {
+            return false;
+        }
+        
+        UniversityClass class1 = classes.get(classID1);
+        UniversityClass class2 = classes.get(classID2);
+
+        if (class1.getType() != class2.getType()) {
+            return false;
+        }
+        
+        if (class1.getDuration() != class2.getDuration()) {
+            return false;
+        }
+
+        boolean isMergeOK = true;
+        
+        class1.setCapacity(class1.getCapacity() + class2.getCapacity());
+        
+        for (String attribute : class2.getAttributes()) {
+            class1.addAttribute(attribute);
+        }
+        
+        List<Integer> class1GroupIDs = classToStudents.get(classID1);
+        List<Integer> class2GroupIDs = classToStudents.get(classID2);
+        
+        for (Integer class2GroupID : class2GroupIDs) {
+            class1GroupIDs.add(class2GroupID);
+            studentsToClass.get(class2GroupID).add(classID1);
+        }
+
+        boolean isRemovalOK = removeClass(classID2);
+
+        return isRemovalOK;
+    }
+    
     @Override
     public boolean load(BufferedReader reader) throws IOException {
         type = SemesterType.valueOf(reader.readLine());
@@ -728,50 +853,6 @@ public class Semester implements IPersistable {
         return true;
     }
     
-    public boolean assignLecturerToClass(int lecturerID, int classID) {
-        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
-        List<Integer> lecturers = classToLecturer.get(classID);
-        
-        if ((lecturerClasses == null) || (lecturers == null)) {
-            return false;
-        }
-        
-        if (lecturerClasses.contains(classID)) {
-            return false;
-        }
-        
-        if (lecturers.contains(lecturerID)) {
-            return false;
-        }
-        
-        lecturerClasses.add(classID);
-        lecturers.add(lecturerID);
-        
-        return true;
-    }
-    
-    public boolean unassignLecturerFromClass(int lecturerID, int classID) {
-        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
-        List<Integer> lecturers = classToLecturer.get(classID);
-        
-        if ((lecturerClasses == null) || (lecturers == null)) {
-            return false;
-        }
-        
-        if (!lecturerClasses.contains(classID)) {
-            return false;
-        }
-        
-        if (!lecturers.contains(lecturerID)) {
-            return false;
-        }
-        
-        lecturerClasses.remove(classID);
-        lecturers.remove(lecturerID);
-        
-        return true;
-    }
-
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
         writer.write(type.toString());

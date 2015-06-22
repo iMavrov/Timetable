@@ -86,6 +86,10 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         return capacity;
     }
     
+    public void setCapacity(int newCapacity) {
+        capacity = newCapacity;
+    }
+    
     @Override
     public boolean load(BufferedReader reader) throws IOException {
         programID = Integer.valueOf(reader.readLine());
@@ -159,6 +163,10 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
     @Override
     public boolean removeAttribute(String attribute) {
         return attributes.remove(attribute);
+    }
+    
+    public Set<String> getAttributes() {
+        return attributes;
     }
     
     // Parent subject
