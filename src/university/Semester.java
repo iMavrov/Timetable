@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Map.Entry;
+import utilities.Filter;
 
 /**
  *
@@ -636,6 +637,21 @@ public class Semester implements IPersistable {
         boolean isRemovalOK = removeClass(classID2);
 
         return isRemovalOK;
+    }
+       
+    public List<Lecturer> filterLecturers(int departmentID) {
+        Filter<Lecturer> lecturerFilter = new Filter<>();
+        lecturerFilter.addCriterion(new DepartmentFilterCriterion(departmentID));
+        
+        // TODO: Refactor everything. We need a real Lecturer list here not just IDs.
+        return lecturerFilter.filterList(new ArrayList<Lecturer>());
+    }
+    
+    public List<UniversityClass> filterClasses(int programID, int semesterIndex) {
+        Filter<UniversityClass> classFilter = new Filter<>();
+        classFilter.addCriterion(new ProgramFilterCriterion(programID, semesterIndex));
+        
+        return classFilter.filterList(classes);
     }
     
     @Override

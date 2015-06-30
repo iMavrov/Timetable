@@ -60,6 +60,10 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         return programID;
     }
     
+    public int getSemesterIndex() {
+        return semesterIndex;
+    }
+    
     public Subject getSubject() {
         Program program = University.getInstance().getProgram(programID);
         
