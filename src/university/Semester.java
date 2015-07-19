@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import utilities.Filter;
 
@@ -27,31 +28,33 @@ public class Semester implements IPersistable {
         
         roomAvailability = new HashMap<>();
         
-        lecturerAvailability = new HashMap<>();
+        //lecturerAvailability = new HashMap<>();
         addedSemesterLecturers = 0;
         semesterLecturers = new HashMap<>();
         semesterLecturerAvailability = new HashMap<>();
         
-        studentDistribution = new HashMap<>();
-        groups = new ArrayList<>();
+        programs = new HashMap<>();
+        groups = new HashSet<>();
         studentAvailability = new HashMap<>();
     
         addedSemesterSubjects = 0;
         semesterSubjects = new HashMap<>();
         semesterSubjectCapacity = new HashMap<>();
 
-        classes = new ArrayList<>();
+        classes = new HashSet<>();
         
         roomToClass = new HashMap<>();
         classToRoom = new HashMap<>();
     
-        lecturerToClass = new HashMap<>();
+        //lecturerToClass = new HashMap<>();
         classToLecturer = new HashMap<>();
         
         studentsToClass = new HashMap<>();
         classToStudents = new HashMap<>();
         
         timetable = new HashMap<>();
+        
+        lecturers = new HashSet<>();
     }
     
     public Semester(SemesterType semesterType, int semesterCalendarYear) {
@@ -60,31 +63,33 @@ public class Semester implements IPersistable {
         
         roomAvailability = new HashMap<>();
         
-        lecturerAvailability = new HashMap<>();
+        //lecturerAvailability = new HashMap<>();
         addedSemesterLecturers = 0;
         semesterLecturers = new HashMap<>();
         semesterLecturerAvailability = new HashMap<>();
         
-        studentDistribution = new HashMap<>();
-        groups = new ArrayList<>();
+        programs = new HashMap<>();
+        groups = new HashSet<>();
         studentAvailability = new HashMap<>();
     
         addedSemesterSubjects = 0;
         semesterSubjects = new HashMap<>();
         semesterSubjectCapacity = new HashMap<>();
 
-        classes = new ArrayList<>();
+        classes = new HashSet<>();
         
         roomToClass = new HashMap<>();
         classToRoom = new HashMap<>();
     
-        lecturerToClass = new HashMap<>();
+        //lecturerToClass = new HashMap<>();
         classToLecturer = new HashMap<>();
         
         studentsToClass = new HashMap<>();
         classToStudents = new HashMap<>();
         
         timetable = new HashMap<>();
+        
+        lecturers = new HashSet<>();
     }
     
     public void setType(SemesterType newType) {
@@ -103,18 +108,16 @@ public class Semester implements IPersistable {
         return calendarYear;
     }
     
-    public boolean addRoom(int roomID, Availability newRoomAvailability) {
-        if (roomAvailability.containsKey(roomID)) {
+    public boolean addRoom(Room newRoom) {
+        if (newRoom == null) {
             return false;
         }
         
-        roomAvailability.put(roomID, newRoomAvailability);
-        
-        return true;
+        return rooms.add(newRoom);
     }
     
     public boolean removeRoom(int roomID) {
-        Availability availability = roomAvailability.remove(roomID);
+        Schedule availability = roomAvailability.remove(roomID);
         return (availability != null);
     }
     
@@ -122,11 +125,11 @@ public class Semester implements IPersistable {
         return roomAvailability.keySet();
     }
     
-    public Availability getRoomAvailability(int roomID) {
+    public Schedule getRoomAvailability(int roomID) {
         return roomAvailability.get(roomID);
     }
     
-    public boolean setRoomAvailability(int roomID, Availability newAvailability) {
+    public boolean setRoomAvailability(int roomID, Schedule newAvailability) {
         if (!roomAvailability.containsKey(roomID)) {
             return false;
         }
@@ -136,43 +139,30 @@ public class Semester implements IPersistable {
         return true;
     }
     
-    public boolean addLecturer(int lecturerID, Availability newLecturerAvailability) {
-        if (lecturerAvailability.containsKey(lecturerID)) {
+    public boolean addLecturer(Lecturer lecturer) {
+        if (lecturer == null) {
             return false;
         }
         
-        lecturerAvailability.put(lecturerID, newLecturerAvailability);
-        lecturerToClass.put(lecturerID, new ArrayList<Integer>());
-        
-        return true;
+        return lecturers.add(lecturer);
     }
     
-    public boolean removeLecturer(int lecturerID) {
-        Availability availability = lecturerAvailability.remove(lecturerID);
-        lecturerToClass.remove(lecturerID);
-        
-        return (availability != null);
-    }
-    
-    public Set<Integer> getLecturers() {
-        return lecturerAvailability.keySet();
-    }
-    
-    public Availability getLecturerAvailability(int lecturerID) {
-        return lecturerAvailability.get(lecturerID);
-    }
-    
-    public boolean setLecturerAvailability(int lecturerID, Availability newAvailability) {
-        if (!lecturerAvailability.containsKey(lecturerID)) {
+    public boolean removeLecturer(Lecturer lecturer) {
+        if (lecturer == null) {
             return false;
         }
         
-        lecturerAvailability.put(lecturerID, newAvailability);
+        boolean areAllClassesUnassigned = lecturer.unassignAllClasses();
+        boolean isLecturerRemoved = lecturers.remove(lecturer);
         
-        return true;
+        return areAllClassesUnassigned && isLecturerRemoved;
     }
     
-    public boolean addSemesterLecturer(Lecturer newLecturer, Availability newSemesterLecturerAvailability) {
+    public Set<Lecturer> getLecturers() {
+        return lecturers;
+    }
+    
+    public boolean addSemesterLecturer(LecturerData newLecturer, Schedule newSemesterLecturerAvailability) {
         if (newLecturer == null) {
             return false;
         }
@@ -196,7 +186,7 @@ public class Semester implements IPersistable {
         return true;
     }
     
-    public boolean updateSemesterLecturer(Lecturer updatedLecturer) {
+    public boolean updateSemesterLecturer(LecturerData updatedLecturer) {
         if (updatedLecturer == null) {
             return false;
         }
@@ -206,7 +196,7 @@ public class Semester implements IPersistable {
         }
         
         ArrayList<Integer> matches = new ArrayList<>();
-        for (Entry<Integer, Lecturer> entry : semesterLecturers.entrySet()) {
+        for (Entry<Integer, LecturerData> entry : semesterLecturers.entrySet()) {
             if (entry.getValue().equals(updatedLecturer)) {
                 matches.add(entry.getKey());
             }
@@ -223,7 +213,7 @@ public class Semester implements IPersistable {
     
     public boolean removeSemesterLecturer(int lecturerID) {
         semesterLecturers.remove(lecturerID);
-        Availability availability = semesterLecturerAvailability.remove(lecturerID);
+        Schedule availability = semesterLecturerAvailability.remove(lecturerID);
         lecturerToClass.remove(lecturerID);
         
         return (availability != null);
@@ -233,11 +223,11 @@ public class Semester implements IPersistable {
         return semesterLecturers.keySet();
     }
     
-    public Availability getSemesterLecturerAvailability(int semesterLecturerID) {
+    public Schedule getSemesterLecturerAvailability(int semesterLecturerID) {
         return semesterLecturerAvailability.get(semesterLecturerID);
     }
     
-    public boolean setSemesterLecturerAvailability(int semesterLecturerID, Availability newAvailability) {
+    public boolean setSemesterLecturerAvailability(int semesterLecturerID, Schedule newAvailability) {
         if (!semesterLecturerAvailability.containsKey(semesterLecturerID)) {
             return false;
         }
@@ -247,56 +237,55 @@ public class Semester implements IPersistable {
         return true;
     }
     
-    public boolean addProgram(int programID, StudentDistribution programStudentDistribution) {
-        if (studentDistribution.containsKey(programID)) {
+    public boolean addProgram(Program newProgram, StudentDistribution newProgramStudentDistribution) {
+        if (newProgram == null || newProgramStudentDistribution == null) {
             return false;
         }
         
-        studentDistribution.put(programID, programStudentDistribution);
+        programs.put(newProgram, newProgramStudentDistribution);
         
         // Generate student groups according to student distributions
         // Give the new groups default student availability
         // Generate university classes and connect them to the student groups.
-        Program program = University.getInstance().getProgram(programID);
         
-        int yearCount = programStudentDistribution.getYearCount();
+        int yearCount = newProgramStudentDistribution.getYearCount();
         for (int yearIndex = 0; yearIndex < yearCount; ++yearIndex) {
             
-            int yearNumber = programStudentDistribution.getYearNumber(yearIndex);
+            int yearNumber = newProgramStudentDistribution.getYearNumber(yearIndex);
             int semesterIndex = 
                     (type == SemesterType.WINTER) ? 
                     2 * (yearNumber - 1) : 
                     2 * (yearNumber - 1) + 1;
                     
-            int divisionCount = programStudentDistribution.getDivisionCount(yearIndex);
+            int divisionCount = newProgramStudentDistribution.getDivisionCount(yearIndex);
             for (int divisionIndex = 0; divisionIndex < divisionCount; ++divisionIndex) {
                 
-                int divisionNumber = programStudentDistribution.getDivisionNumber(yearIndex, divisionIndex);
-                int divisionCapacity = programStudentDistribution.getDivisionCapacity(yearIndex, divisionIndex);
+                int divisionNumber = newProgramStudentDistribution.getDivisionNumber(yearIndex, divisionIndex);
+                int divisionCapacity = newProgramStudentDistribution.getDivisionCapacity(yearIndex, divisionIndex);
                 
                 List<Integer> newGroupIDs = new ArrayList<>();
                 
-                int groupCount = programStudentDistribution.getGroupCount(yearIndex, divisionIndex);
+                int groupCount = newProgramStudentDistribution.getGroupCount(yearIndex, divisionIndex);
                 for (int groupIndex = 0; groupIndex < groupCount; ++groupIndex) {
                     
-                    int groupNumber = programStudentDistribution.getGroupNumber(yearIndex, divisionIndex, groupIndex);
-                    int groupCapacity = programStudentDistribution.getGroupCapacity(yearIndex, divisionIndex, groupIndex);
+                    int groupNumber = newProgramStudentDistribution.getGroupNumber(yearIndex, divisionIndex, groupIndex);
+                    int groupCapacity = newProgramStudentDistribution.getGroupCapacity(yearIndex, divisionIndex, groupIndex);
                     
-                    Group group = new Group(programID, yearNumber, divisionNumber, groupNumber, groupCapacity);
+                    Group group = new Group(newProgram, yearNumber, divisionNumber, groupNumber, groupCapacity);
                     groups.add(group);
                     
                     int groupID = groups.size() - 1;
-                    studentAvailability.put(groupID, new Availability());
+                    studentAvailability.put(groupID, new Schedule());
                     
                     studentsToClass.put(groupID, new ArrayList<Integer>());
                     
                     newGroupIDs.add(groupID);
                     
                     // Add all the laboratory and seminar classes this group has
-                    int semesterSubjectCount = program.getSemesterSubjectCount(semesterIndex);
+                    int semesterSubjectCount = newProgram.getSemesterSubjectCount(semesterIndex);
                     for (int subjectIndex = 0; subjectIndex < semesterSubjectCount; ++subjectIndex) {
                         
-                        Subject subject = program.getSubject(semesterIndex, subjectIndex);
+                        Subject subject = newProgram.getSubject(semesterIndex, subjectIndex);
                         String subjectName = subject.getShortName();
                         
                         boolean subjectHasSeminar = subject.hasClass(UniversityClassType.SEMINAR);
@@ -304,8 +293,7 @@ public class Semester implements IPersistable {
                             int seminarHourCount = subject.getClassHourCount(UniversityClassType.SEMINAR);
 
                             UniversityClass universityClass = new UniversityClass(
-                                    programID, semesterIndex, subjectIndex, 
-                                    UniversityClassType.SEMINAR, subjectName, 
+                                    subject, UniversityClassType.SEMINAR, subjectName, 
                                     seminarHourCount, groupCapacity);
                             classes.add(universityClass);
                             
@@ -325,8 +313,7 @@ public class Semester implements IPersistable {
                             int labHourCount = subject.getClassHourCount(UniversityClassType.LABORATORY);
 
                             UniversityClass universityClass = new UniversityClass(
-                                    programID, semesterIndex, subjectIndex, 
-                                    UniversityClassType.LABORATORY, subjectName, 
+                                    subject, UniversityClassType.LABORATORY, subjectName, 
                                     labHourCount, groupCapacity);
 
                             classes.add(universityClass);
@@ -345,10 +332,10 @@ public class Semester implements IPersistable {
                 }
                 
                 // Add all the lections this division of groups has
-                int semesterSubjectCount = program.getSemesterSubjectCount(semesterIndex);
+                int semesterSubjectCount = newProgram.getSemesterSubjectCount(semesterIndex);
                 for (int subjectIndex = 0; subjectIndex < semesterSubjectCount; ++subjectIndex) {
                     
-                    Subject subject = program.getSubject(semesterIndex, subjectIndex);
+                    Subject subject = newProgram.getSubject(semesterIndex, subjectIndex);
                     String subjectName = subject.getShortName();
 
                     boolean subjectHasLection = subject.hasClass(UniversityClassType.LECTION);
@@ -357,8 +344,7 @@ public class Semester implements IPersistable {
 
                         // For each division
                         UniversityClass universityClass = new UniversityClass(
-                                programID, semesterIndex, subjectIndex, 
-                                UniversityClassType.LECTION, subjectName, 
+                                subject, UniversityClassType.LECTION, subjectName, 
                                 lectionHourCount, divisionCapacity);
 
                         classes.add(universityClass);
@@ -380,63 +366,59 @@ public class Semester implements IPersistable {
         return true;
     }
     
-    public boolean removeProgram(int programID) {
-        if (!studentDistribution.containsKey(programID)) {
-            return false;
-        }
+    public boolean removeProgram(Program program) {
+        // Remove program
+        programs.remove(program);
         
-        // Remove programID
-        studentDistribution.remove(programID);
+        // Remove groups
+        List<Group> groupsToRemove = new ArrayList<>();
         
-        // Remove groupIDs
-        List<Integer> groupsToRemove = new ArrayList<>();
-        
-        for (int groupIndex = 0; groupIndex < groups.size(); ++groupIndex) {
-            if (groups.get(groupIndex).getProgramID() == programID) {
-                groupsToRemove.add(groupIndex); 
+        for (Group group : groups) {
+            if (group.getProgram() == program) {
+                groupsToRemove.add(group); 
             }
         }
         
-        for (int groupIndex : groupsToRemove) {
-            groups.remove(groupIndex);
-            studentAvailability.remove(groupIndex);
-            studentsToClass.remove(groupIndex);
+        for (Group group : groupsToRemove) {
+            groups.remove(group);
+            // TODO: studentAvailability.remove(groupIndex);
+            // TODO: studentsToClass.remove(groupIndex);
         }
         
         // Remove classIDs
-        List<Integer> classesToRemove = new ArrayList<>();
+        List<UniversityClass> classesToRemove = new ArrayList<>();
         
-        for (int classIndex = 0; classIndex < classes.size(); ++classIndex) {
-            if (classes.get(classIndex).getProgramID() == programID) {
-                classesToRemove.add(classIndex);
+        for (UniversityClass universityClass : classes) {
+            if (universityClass.getSubject().getProgram() == program) {
+                classesToRemove.add(universityClass);
             }
         }
         
-        for (int classIndex : classesToRemove) {
-            classes.remove(classIndex);
-            classToStudents.remove(classIndex);
-            classToLecturer.remove(classIndex);
+        for (UniversityClass universityClass : classesToRemove) {
+            classes.remove(universityClass);
+            //TODO: classToStudents.remove(classIndex);
+            //TODO: classToLecturer.remove(classIndex);
         }
 
         return true;
     }
     
-    public Set<Integer> getPrograms() {
-        return studentDistribution.keySet();
+    public Set<Program> getPrograms() {
+        return programs.keySet();
     }
     
-    public StudentDistribution getStudentDistribution(int programID) {
-        return studentDistribution.get(programID);
+    public StudentDistribution getStudentDistribution(Program program) {
+        return programs.get(program);
     }
     
-    public boolean setStudentDistribution(int programID, StudentDistribution newDistribution) {
-        if (!studentDistribution.containsKey(programID)) {
+    public boolean setStudentDistribution(Program program, StudentDistribution newDistribution) {
+        if (!programs.containsKey(program)) {
             return false;
         }
         
-        boolean programRemoved = removeProgram(programID);
+        boolean programRemoved = removeProgram(program);
         
-        boolean programAdded = addProgram(programID, newDistribution);
+        boolean programAdded = addProgram(program, newDistribution);
         
         return (programRemoved && programAdded);
     }
@@ -514,102 +496,36 @@ public class Semester implements IPersistable {
         return true;
     }
     
-    public boolean assignLecturerToClass(int lecturerID, int classID) {
-        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
-        List<Integer> lecturers = classToLecturer.get(classID);
-        
-        if ((lecturerClasses == null) || (lecturers == null)) {
+    public boolean assignLecturerToClass(Lecturer lecturer, UniversityClass universityClass) {
+        if (universityClass == null) {
             return false;
         }
         
-        if (lecturerClasses.contains(classID)) {
-            return false;
-        }
-        
-        if (lecturers.contains(lecturerID)) {
-            return false;
-        }
-        
-        lecturerClasses.add(classID);
-        lecturers.add(lecturerID);
-        
-        return true;
+        return universityClass.assignLecturer(lecturer, AssignPolicy.BOTH_WAYS);
     }
     
-    public boolean unassignLecturerFromClass(int lecturerID, int classID) {
-        List<Integer> lecturerClasses = lecturerToClass.get(lecturerID);
-        List<Integer> lecturers = classToLecturer.get(classID);
-        
-        if ((lecturerClasses == null) || (lecturers == null)) {
+    public boolean unassignLecturerFromClass(Lecturer lecturer, UniversityClass universityClass) {
+        if (universityClass == null) {
             return false;
         }
         
-        if (!lecturerClasses.contains(classID)) {
-            return false;
-        }
-        
-        if (!lecturers.contains(lecturerID)) {
-            return false;
-        }
-        
-        lecturerClasses.remove(classID);
-        lecturers.remove(lecturerID);
-        
-        return true;
+        return universityClass.unassignLecturer(lecturer, AssignPolicy.BOTH_WAYS);
     }
     
-    public boolean removeClass(int classID) {
-        if (classID < 0 || classes.size() <= classID) {
+    public boolean removeClass(UniversityClass universityClass) {
+        if (universityClass == null) {
             return false;
         }
         
-        Integer boxedClassID = new Integer(classID); 
-        
-        UniversityClass classToRemove = classes.remove(classID);
-        
-        ClassPlacement classPlacement = timetable.remove(classID);
-        int day = classPlacement.getStartWeekHour() / 24;
-        int hour = classPlacement.getStartWeekHour() % 24;
-        
-        if (classToRoom.containsKey(classID)) {
-            int roomID = classToRoom.remove(classID);
-            
-            roomToClass.get(roomID).remove(boxedClassID);
-            
-            roomAvailability.get(roomID).setAvailability(day, hour, true);
-        }
-        
-        if (classToLecturer.containsKey(classID)) {
-            List<Integer> classLecturers = classToLecturer.remove(classID);
-            
-            for (int lecturerID : classLecturers) {
-                lecturerToClass.get(lecturerID).remove(boxedClassID);
-                
-                lecturerAvailability.get(lecturerID).setAvailability(day, hour, true);
-            }
-        }
-        
-        if (classToStudents.containsKey(classID)) {
-            List<Integer> classGroups = classToStudents.remove(classID);
-            
-            for (int groupID : classGroups) {
-                studentsToClass.get(groupID).remove(boxedClassID);
-                
-                studentAvailability.get(groupID).setAvailability(day, hour, true);
-            }
-        }
-
-        return true;
+        return universityClass.unassignAll();
+        // TODO: universityClass = null; ???
     }
     
-    public boolean mergeClasses(int classID1, int classID2) {
-        if (classID1 < 0 || classID2 < 0 || classes.size() <= classID1 || classes.size() <= classID2) {
+    public boolean mergeClasses(UniversityClass class1, UniversityClass class2) {
+        if ((class1 == null) || (class2 == null)) {
             return false;
         }
         
-        UniversityClass class1 = classes.get(classID1);
-        UniversityClass class2 = classes.get(classID2);
-
         if (class1.getType() != class2.getType()) {
             return false;
         }
@@ -626,30 +542,35 @@ public class Semester implements IPersistable {
             class1.addAttribute(attribute);
         }
         
-        List<Integer> class1GroupIDs = classToStudents.get(classID1);
-        List<Integer> class2GroupIDs = classToStudents.get(classID2);
+//        List<Integer> class1GroupIDs = classToStudents.get(classID1);
+//        List<Integer> class2GroupIDs = classToStudents.get(classID2);
+//        
+//        for (Integer class2GroupID : class2GroupIDs) {
+//            class1GroupIDs.add(class2GroupID);
+//            studentsToClass.get(class2GroupID).add(classID1);
+//        }
         
-        for (Integer class2GroupID : class2GroupIDs) {
-            class1GroupIDs.add(class2GroupID);
-            studentsToClass.get(class2GroupID).add(classID1);
+        boolean areGroupsTransferred = true;
+        for (Group group : class2.getGroups()) {
+            boolean isGroupTransferred = class1.assignGroup(group, AssignPolicy.BOTH_WAYS);
+            areGroupsTransferred = areGroupsTransferred && isGroupTransferred;
         }
 
-        boolean isRemovalOK = removeClass(classID2);
+        boolean isClass2Removed = removeClass(class2);
 
-        return isRemovalOK;
+        return areGroupsTransferred && isClass2Removed;
     }
        
-    public List<Lecturer> filterLecturers(int departmentID) {
+    public Set<Lecturer> filterLecturers(int departmentID) {
         Filter<Lecturer> lecturerFilter = new Filter<>();
         lecturerFilter.addCriterion(new DepartmentFilterCriterion(departmentID));
         
-        // TODO: Refactor everything. We need a real Lecturer list here not just IDs.
-        return lecturerFilter.filterList(new ArrayList<Lecturer>());
+        return lecturerFilter.filterList(lecturers);
     }
     
-    public List<UniversityClass> filterClasses(int programID, int semesterIndex) {
+    public Set<UniversityClass> filterClasses(Program program) {
         Filter<UniversityClass> classFilter = new Filter<>();
-        classFilter.addCriterion(new ProgramFilterCriterion(programID, semesterIndex));
+        classFilter.addCriterion(new ProgramFilterCriterion(program));
         
         return classFilter.filterList(classes);
     }
@@ -663,7 +584,7 @@ public class Semester implements IPersistable {
         while (0 < roomAvailabilityItemsCount) {
             int id = Integer.valueOf(reader.readLine());
             
-            Availability availability = new Availability();
+            Schedule availability = new Schedule();
             availability.load(reader);
             
             roomAvailability.put(id, availability);
@@ -674,7 +595,7 @@ public class Semester implements IPersistable {
         while (0 < lecturerAvailabilityItemsCount) {
             int id = Integer.valueOf(reader.readLine());
             
-            Availability availability = new Availability();
+            Schedule availability = new Schedule();
             availability.load(reader);
             
             lecturerAvailability.put(id, availability);
@@ -687,7 +608,7 @@ public class Semester implements IPersistable {
         while (0 < semesterLecturerCount) {
             int lecturerID = Integer.valueOf(reader.readLine());
             
-            Lecturer lecturer = new Lecturer();
+            LecturerData lecturer = new LecturerData();
             lecturer.load(reader);
             
             semesterLecturers.put(lecturerID, lecturer);
@@ -698,7 +619,7 @@ public class Semester implements IPersistable {
         while (0 < semesterLecturerAvailabilityItemsCount) {
             int id = Integer.valueOf(reader.readLine());
             
-            Availability availability = new Availability();
+            Schedule availability = new Schedule();
             availability.load(reader);            
             
             semesterLecturerAvailability.put(id, availability);
@@ -712,7 +633,7 @@ public class Semester implements IPersistable {
             StudentDistribution distribution = new StudentDistribution();
             distribution.load(reader);
             
-            studentDistribution.put(id, distribution);
+            //TODO: programs.put(id, distribution);
             --studentDistributionItemsCount;
         }
         
@@ -728,7 +649,7 @@ public class Semester implements IPersistable {
         while (0 < studentAvailabilityItemsCount) {
             int id = Integer.valueOf(reader.readLine());
             
-            Availability availability = new Availability();
+            Schedule availability = new Schedule();
             availability.load(reader);            
             
             studentAvailability.put(id, availability);
@@ -879,7 +800,7 @@ public class Semester implements IPersistable {
         
         writer.write(String.valueOf(roomAvailability.size()));
         writer.newLine();
-        for (Entry<Integer, Availability> entry : roomAvailability.entrySet()) {
+        for (Entry<Integer, Schedule> entry : roomAvailability.entrySet()) {
             writer.write(String.valueOf(entry.getKey()));
             writer.newLine();
             
@@ -888,7 +809,7 @@ public class Semester implements IPersistable {
         
         writer.write(String.valueOf(lecturerAvailability.size()));
         writer.newLine();
-        for (Entry<Integer, Availability> entry : lecturerAvailability.entrySet()) {
+        for (Entry<Integer, Schedule> entry : lecturerAvailability.entrySet()) {
             writer.write(String.valueOf(entry.getKey()));
             writer.newLine();
             
@@ -900,7 +821,7 @@ public class Semester implements IPersistable {
         
         writer.write(String.valueOf(semesterLecturers.size()));
         writer.newLine();
-        for (Entry<Integer, Lecturer> entry : semesterLecturers.entrySet()) {
+        for (Entry<Integer, LecturerData> entry : semesterLecturers.entrySet()) {
             writer.write(String.valueOf(entry.getKey()));
             writer.newLine();
             
@@ -909,16 +830,16 @@ public class Semester implements IPersistable {
         
         writer.write(String.valueOf(semesterLecturerAvailability.size()));
         writer.newLine();
-        for (Entry<Integer, Availability> entry : semesterLecturerAvailability.entrySet()) {
+        for (Entry<Integer, Schedule> entry : semesterLecturerAvailability.entrySet()) {
             writer.write(String.valueOf(entry.getKey()));
             writer.newLine();
             
             entry.getValue().save(writer);
         }
         
-        writer.write(String.valueOf(studentDistribution.size()));
+        writer.write(String.valueOf(programs.size()));
         writer.newLine();
-        for (Entry<Integer, StudentDistribution> entry : studentDistribution.entrySet()) {
+        for (Entry<Program, StudentDistribution> entry : programs.entrySet()) {
             writer.write(String.valueOf(entry.getKey()));
             writer.newLine();
             
@@ -933,7 +854,7 @@ public class Semester implements IPersistable {
         
         writer.write(String.valueOf(studentAvailability.size()));
         writer.newLine();
-        for (Entry<Integer, Availability> entry : studentAvailability.entrySet()) {
+        for (Entry<Integer, Schedule> entry : studentAvailability.entrySet()) {
             writer.write(String.valueOf(entry.getKey()));
             writer.newLine();
             
@@ -1063,29 +984,47 @@ public class Semester implements IPersistable {
     private SemesterType type;
     private int calendarYear;
     
-    // Room view.
-    // Room ID to Availability.
-    private Map<Integer, Availability> roomAvailability;
+    /*** Room view ***/
+    // Room ID to Schedule. // X
+    private Map<Integer, Schedule> roomAvailability;
     
-    // Lecturer view. 
-    // State Lecturer ID to Availability. 
-    private Map<Integer, Availability> lecturerAvailability;
+    // Room ID to a list of UniversityClass IDs // X
+    private Map<Integer, List<Integer>> roomToClass;
     
-    // Count of the number of added semester lecturers. Helps for the unique ID system.
+    private Set<Room> rooms;
+    
+    /*** Lecturer view ***/
+    // Lecturer ID to Schedule. // X
+    private Map<Integer, Schedule> lecturerAvailability;
+    
+    // LecturerData ID to a list of UniversityClass IDs // X
+    private Map<Integer, List<Integer>> lecturerToClass;
+    
+    // Count of the number of added semester lecturers. Helps for the unique ID system. // TODO
     private int addedSemesterLecturers;
-    // Semester specific lecturers to LecturerID
-    private Map<Integer, Lecturer> semesterLecturers;
-    // Semester specific lecturer ID to Availability.
-    private Map<Integer, Availability> semesterLecturerAvailability;
     
-    // Student view.
-    // Program ID to StudentDistribution.
-    private Map<Integer, StudentDistribution> studentDistribution;
-    // Student group availability.
-    private List<Group> groups;
-    // Group ID to Availability
-    private Map<Integer, Availability> studentAvailability;
+    // Semester specific lecturers to LecturerID // TODO
+    private Map<Integer, LecturerData> semesterLecturers;
     
+    // Semester specific lecturer ID to Schedule. // TODO
+    private Map<Integer, Schedule> semesterLecturerAvailability;
+    
+    private Set<Lecturer> lecturers;
+    
+    /*** Student view ***/
+    // Program ID to StudentDistribution. // TODO
+    private Map<Program, StudentDistribution> programs;
+    
+    // Group IDs to Schedule // X
+    private Map<Integer, Schedule> studentAvailability;
+    
+    // Group IDs to UniversityClass ID // X
+    private Map<Integer, List<Integer>> studentsToClass;
+    
+    // Student groups
+    private Set<Group> groups;
+    
+    /*** Class view ***/
     // Count of the number of added semester subjects. Helps for the unique ID system.
     private int addedSemesterSubjects;
     // Semester specific subjects to SubjectID.
@@ -1093,35 +1032,40 @@ public class Semester implements IPersistable {
     // Semester specific subject ID to capacity.
     private Map<Integer, Integer> semesterSubjectCapacity;
     
-    // Classes to place in the timetable
-    private List<UniversityClass> classes;
-    
-    // 1. Use the student distribution to generate classes
-    
-    // 2. Assign lecturers to classes
-    
-    // 1. Merge the different classes that would be teached together by the same teacher.
-    
-    // 3. Select a class to place and place it.
-    
-    // Room ID to a list of UniversityClass IDs
-    private Map<Integer, List<Integer>> roomToClass;
-    
-    // UniversityClass ID to Room ID
+    // UniversityClass ID to Room ID // X
     private Map<Integer, Integer> classToRoom;
     
-    // Lecturer ID to a list of UniversityClass IDs
-    private Map<Integer, List<Integer>> lecturerToClass;
-    
-    // UniversityClass ID to Lecturer ID
+    // UniversityClass ID to LecturerData ID // X
     private Map<Integer, List<Integer>> classToLecturer;
     
-    // Group IDs to UniversityClass ID
-    private Map<Integer, List<Integer>> studentsToClass;
-    
-    // UniversityClass ID to Group IDs
+    // UniversityClass ID to Group IDs // X
     private Map<Integer, List<Integer>> classToStudents;
     
-    // UniversityClass ID to Placement
+    // UniversityClass ID to Placement // X
     private Map<Integer, ClassPlacement> timetable;
+    
+    // Classes to place in the timetable
+    private Set<UniversityClass> classes;
+    
+    // Add rooms for the semester
+    
+    // Specify room schedule and attributes
+    
+    // Add state lecturers for the semester
+    
+    // Specify lecturer schedule and attributes
+    
+    // Add semester lecturers for the semester (same place as other lecturers)
+    
+    // Specify semester lecturer schedule and attributes
+    
+    // Add programs for the semester
+    
+    // Specify student distributions for the programs to generate classes
+    
+    // Assign lecturers to classes and specify attributes for the class (by the lecturer)
+
+    // Merge classes that would be taught together by the same teacher
+    
+    // Select a class and place it (room and time)
 }

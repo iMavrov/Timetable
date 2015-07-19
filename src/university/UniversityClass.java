@@ -17,28 +17,31 @@ import java.util.HashSet;
 public class UniversityClass implements IPersistable, IAttributeHolder {
     
     public UniversityClass() {
-        programID = University.INVALID_ID;
-        semesterIndex = University.INVALID_ID;
-        semesterSubjectIndex = University.INVALID_ID;
-        type = UniversityClassType.LECTION;
+        subject = null;
+        type = UniversityClassType.UNKNOWN;
         name = "";
         duration = 0;
         capacity = 0;
         attributes = new HashSet<>();
+        room = null;
+        startHour = -1;
+        groups = new HashSet<>();
+        lecturers = new HashSet<>();
     }
     
     public UniversityClass(
-            int classProgramID, int classSemesterIndex, 
-            int classSemesterSubjectIndex, UniversityClassType classType,
+            Subject classSubject, UniversityClassType classType,
             String subjectName, int classDuration, int classCapacity) {
-        programID = classProgramID;
-        semesterIndex = classSemesterIndex;
-        semesterSubjectIndex = classSemesterSubjectIndex;
+        subject = classSubject;
         type = classType;
         name = subjectName;
         duration = classDuration;
         capacity = classCapacity;
         attributes = new HashSet<>();
+        room = null;
+        startHour = -1;
+        groups = new HashSet<>();
+        lecturers = new HashSet<>();
         
         switch(type) {
             case LECTION: {
@@ -56,22 +59,8 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         }
     }
     
-    public int getProgramID() {
-        return programID;
-    }
-    
-    public int getSemesterIndex() {
-        return semesterIndex;
-    }
-    
     public Subject getSubject() {
-        Program program = University.getInstance().getProgram(programID);
-        
-        if (program == null) {
-            return null;
-        }
-        
-        return program.getSubject(semesterIndex, semesterSubjectIndex);
+        return subject;
     }
     
     public UniversityClassType getType() {
@@ -94,11 +83,41 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         capacity = newCapacity;
     }
     
+    public Set<String> getAttributes() {
+        return attributes;
+    }
+    
+    public Room getRoom() {
+        return room;
+    }
+    
+    public void setRoom(Room classRoom) {
+        room = classRoom;
+    }
+    
+    public int getStartHour() {
+        return startHour;
+    }
+    
+    public void setStartHour(int newStartHour) {
+        startHour = newStartHour;
+    }
+    
+    public boolean isPlaced() {
+        return (room != null) && (0 <= startHour) && (startHour < Schedule.HOURS_PER_WEEK);
+    }
+    
+    public Set<Group> getGroups() {
+        return groups;
+    }
+    
+    public Set<Lecturer> getLecturers() {
+        return lecturers;
+    }
+    
     @Override
     public boolean load(BufferedReader reader) throws IOException {
-        programID = Integer.valueOf(reader.readLine());
-        semesterIndex = Integer.valueOf(reader.readLine());
-        semesterSubjectIndex = Integer.valueOf(reader.readLine());
+        // TODO: Serialize subject id
 
         type = UniversityClassType.valueOf(reader.readLine());
         
@@ -122,15 +141,8 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
 
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
-        writer.write(String.valueOf(programID));
-        writer.newLine();
-        
-        writer.write(String.valueOf(semesterIndex));
-        writer.newLine();
-        
-        writer.write(String.valueOf(semesterSubjectIndex));
-        writer.newLine();
-                
+        // TODO: Serialize subject id
+
         writer.write(type.toString());
         writer.newLine();
         
@@ -169,14 +181,131 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         return attributes.remove(attribute);
     }
     
-    public Set<String> getAttributes() {
-        return attributes;
+    public boolean assignLecturer(Lecturer lecturer, AssignPolicy policy) {
+        if (lecturer == null) {
+            return false;
+        }
+        
+        boolean isClassAssigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassAssigned = lecturer.assignClass(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isLecturerAdded = lecturers.add(lecturer);
+
+        return isClassAssigned && isLecturerAdded;
+    }
+    
+    public boolean unassignLecturer(Lecturer lecturer, AssignPolicy policy) {
+        if (lecturer == null) {
+            return false;
+        }
+        
+        boolean isClassUnassigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassUnassigned = lecturer.unassignClass(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isLecturerRemoved = lecturers.remove(lecturer);
+        
+        return isClassUnassigned && isLecturerRemoved;
+    }
+    
+    public boolean assignGroup(Group group, AssignPolicy policy) {
+        if (group == null) {
+            return false;
+        }
+        
+        boolean isClassAssigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassAssigned = group.assignClass(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isGroupAdded = groups.add(group);
+
+        return isClassAssigned && isGroupAdded;
+    }
+    
+    public boolean unassignGroup(Group group, AssignPolicy policy) {
+        if (group == null) {
+            return false;
+        }
+        
+        boolean isClassUnassigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassUnassigned = group.unassignClass(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isGroupRemoved = groups.remove(group);
+        
+        return isClassUnassigned && isGroupRemoved;
+    }
+    
+    public boolean assignRoom(Room newRoom, AssignPolicy policy) {
+        if (newRoom == null) {
+            return false;
+        }
+        
+        // Unassign from the old room
+        boolean isUnassignedFromOldRoom = true;
+        if (room != null) {
+            isUnassignedFromOldRoom = room.unassignClass(this, AssignPolicy.ONE_WAY);
+        }
+        
+        // Assign to the new room
+        boolean isClassAssigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassAssigned = newRoom.assignClass(this, AssignPolicy.ONE_WAY);
+        }
+        
+        room = newRoom;
+
+        return isUnassignedFromOldRoom && isClassAssigned;
+    }
+    
+    public boolean unassignRoom(AssignPolicy policy) {      
+        boolean isClassUnassigned = true;
+        if ((room != null) && (policy == AssignPolicy.BOTH_WAYS)) {
+            isClassUnassigned = room.unassignClass(this, AssignPolicy.ONE_WAY);
+        }
+        
+        room = null;
+        
+        return isClassUnassigned;
+    }
+    
+    public boolean unassignAllLecturers() {
+        boolean areLecturersUnassigned = true;
+        
+        for (Lecturer lecturer : lecturers) {
+            boolean isLecturerUnassigned = unassignLecturer(lecturer, AssignPolicy.BOTH_WAYS);
+            areLecturersUnassigned = areLecturersUnassigned && isLecturerUnassigned;
+        }
+        
+        return areLecturersUnassigned;
+    }
+    
+    public boolean unassignAllGroups() {
+        boolean areGroupsUnassigned = true;
+        
+        for (Group group : groups) {
+            boolean isGroupUnassigned = unassignGroup(group, AssignPolicy.BOTH_WAYS);
+            areGroupsUnassigned = areGroupsUnassigned && isGroupUnassigned;
+        }
+        
+        return areGroupsUnassigned;
+    }
+    
+    public boolean unassignAll() {
+        boolean areAllLecturersUnassigned = unassignAllLecturers();
+        boolean areAllGroupsUnassigned = unassignAllGroups();
+        boolean isRoomUnassigned = unassignRoom(AssignPolicy.BOTH_WAYS);
+        
+        return areAllLecturersUnassigned && areAllGroupsUnassigned && isRoomUnassigned;
     }
     
     // Parent subject
-    private int programID;
-    private int semesterIndex;
-    private int semesterSubjectIndex;
+    private Subject subject;
     
     // Which type of the subject's classes is this one
     private UniversityClassType type;
@@ -192,4 +321,16 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
     
     // Requirements info
     private Set<String> attributes;
+    
+    // Where is the class tought
+    private Room room;
+    
+    // When is the class tought (hour of the week)
+    private int startHour;
+    
+    // To whom the class is taught
+    private Set<Group> groups;
+    
+    // Who teaches the class
+    private Set<Lecturer> lecturers;
 }

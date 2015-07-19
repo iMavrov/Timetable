@@ -7,6 +7,8 @@ package university;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  *
@@ -15,31 +17,35 @@ import java.io.BufferedWriter;
 public class Group implements IPersistable {
     
     public Group() {
-        programID = University.INVALID_ID;
+        program = null;
         
         year = 0;
         division = 0;
         group = 0;
         
         capacity = 0;
+        
+        classes = new HashSet<>();
     }
     
-    public Group(int program, int yearNumber, int divisionNumber, int groupNumber, int groupCapacity) {
-        programID = program;
+    public Group(Program groupProgram, int yearNumber, int divisionNumber, int groupNumber, int groupCapacity) {
+        program = groupProgram;
         
         year = yearNumber;
         division = divisionNumber;
         group = groupNumber;
         
         capacity = groupCapacity;
+        
+        classes = new HashSet<>();
     }
     
-    public int getProgramID() {
-        return programID;
+    public Program getProgram() {
+        return program;
     }
     
-    public void setProgramID(int newProgramID) {
-        programID = newProgramID;
+    public void setProgram(Program newProgram) {
+        program = newProgram;
     }
     
     public int getYear() {
@@ -76,7 +82,7 @@ public class Group implements IPersistable {
     
     @Override
     public String toString() {
-        return Integer.toString(programID) + ", " +
+        return //TODO: Integer.toString(program.getID()) + ", " +
                Integer.toString(year) + ", " +
                Integer.toString(division) + ", " +
                Integer.toString(group);
@@ -93,13 +99,13 @@ public class Group implements IPersistable {
         }
         
         final Group other = (Group)o;
-        return (programID == other.programID) && (year == other.year) && (division == other.division) && (group == other.group);
+        return (program == other.program) && (year == other.year) && (division == other.division) && (group == other.group);
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 13 * hash + this.programID;
+        // TODO: hash = 13 * hash + this.programID;
         hash = 13 * hash + this.year;
         hash = 13 * hash + this.division;
         hash = 13 * hash + this.group;
@@ -116,11 +122,61 @@ public class Group implements IPersistable {
         return true;
     }
     
-    private int programID;
+    public boolean assignClass(UniversityClass universityClass, AssignPolicy policy) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        // TODO: Place class in schedule
+        boolean isPlacedInSchedule = true;
+        
+        boolean isGroupAssigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isGroupAssigned = universityClass.assignGroup(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isClassAdded = classes.add(universityClass);
+        
+        return isPlacedInSchedule && isGroupAssigned && isClassAdded;
+    }
+    
+    public boolean unassignClass(UniversityClass universityClass, AssignPolicy policy) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        // TODO: Remove class from schedule
+        boolean isRemovedFromSchedule = true;
+        
+        boolean isGroupUnassigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isGroupUnassigned = universityClass.unassignGroup(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isClassRemoved = classes.remove(universityClass);
+        
+        return isRemovedFromSchedule && isGroupUnassigned && isClassRemoved;
+    }
+    
+    public boolean unassignAllClasses() {
+        boolean areClassesUnassigned = true;
+        
+        for (UniversityClass universityClass : classes) {
+            boolean isClassUnassigned = unassignClass(universityClass, AssignPolicy.BOTH_WAYS);
+            areClassesUnassigned = areClassesUnassigned && isClassUnassigned;
+        }
+        
+        return areClassesUnassigned;
+    }
+    
+    private Program program;
     
     private int year;
     private int division;
     private int group;
     
     private int capacity;
+    
+    private Schedule schedule;
+    private Set<UniversityClass> classes;
 }

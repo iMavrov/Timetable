@@ -48,6 +48,10 @@ public class Subject implements IPersistable, IKeyHolder {
         labHourCount = subjectLabHours;
     }
     
+    public Program getProgram() {
+        return program;
+    }
+    
     public String getCode() {
         return code;
     }
@@ -224,7 +228,15 @@ public class Subject implements IPersistable, IKeyHolder {
         
         return false;
     }
-        
+    
+    
+    
+    // Parent program
+    private Program program;
+    private int semesterIndex;
+    private int semesterSubjectIndex;
+    
+    // Subject data
     private String code;
     
     private String fullName;

@@ -201,7 +201,7 @@ public class University implements IPersistable {
         return departments.get(departmentID);
     }
     
-    public boolean addLecturer(Lecturer newLecturer) {
+    public boolean addLecturer(LecturerData newLecturer) {
         if (newLecturer == null) {
             return false;
         }
@@ -217,7 +217,7 @@ public class University implements IPersistable {
         return lecturers.add(newLecturer);
     }
     
-    public boolean updateLecturer(Lecturer updatedLecturer) {
+    public boolean updateLecturer(LecturerData updatedLecturer) {
         if (updatedLecturer == null) {
             return false;
         }
@@ -242,7 +242,7 @@ public class University implements IPersistable {
         return true;
     }
     
-    public Lecturer getLecturer(int lecturerID) {
+    public LecturerData getLecturer(int lecturerID) {
         if (lecturerID < 0 || lecturers.size() <= lecturerID) {
             return null;
         }
@@ -343,7 +343,7 @@ public class University implements IPersistable {
         
         writer.write(String.valueOf(lecturers.size()));
         writer.newLine();
-        for (Lecturer lecturer : lecturers) {
+        for (LecturerData lecturer : lecturers) {
             lecturer.save(writer);
         }
 
@@ -401,7 +401,7 @@ public class University implements IPersistable {
         
         int lecturerCount = Integer.valueOf(reader.readLine());
         while (0 < lecturerCount) {
-            Lecturer newLecturer = new Lecturer();
+            LecturerData newLecturer = new LecturerData();
             newLecturer.load(reader);
             
             lecturers.add(newLecturer);
@@ -434,10 +434,10 @@ public class University implements IPersistable {
     private List<Building> buildings;
     private List<Room> rooms;
     
-    // Lecturer view
+    // LecturerData view
     private List<Faculty> faculties;
     private List<Department> departments;
-    private List<Lecturer> lecturers;
+    private List<LecturerData> lecturers;
     
     // Program view
     private List<Program> programs;
@@ -459,7 +459,7 @@ public class University implements IPersistable {
         buildings = new ArrayList<>();
         rooms = new ArrayList<>();
     
-        // Lecturer view
+        // LecturerData view
         faculties = new ArrayList<>();
         departments = new ArrayList<>();
         lecturers = new ArrayList<>();

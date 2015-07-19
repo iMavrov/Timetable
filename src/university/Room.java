@@ -23,6 +23,7 @@ public class Room implements IPersistable, IKeyHolder {
         type = RoomType.LECTURE_HALL;
         capacity = 0;
         attributes = new HashSet<>();
+        schedule = new Schedule();
     }
     
     public Room(
@@ -36,6 +37,7 @@ public class Room implements IPersistable, IKeyHolder {
         type = roomType;
         capacity = roomCapacity;
         attributes = roomAttributes;
+        schedule = new Schedule();
     }
     
     public int getBuildingID() {
@@ -151,6 +153,53 @@ public class Room implements IPersistable, IKeyHolder {
     public boolean hasBadKey() {
         return (buildingID == University.INVALID_ID) || name.isEmpty();
     }
+    
+    public boolean assignClass(UniversityClass universityClass, AssignPolicy policy) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        // TODO: Place in schedule
+        boolean isPlacedInSchedule = true;
+        
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            universityClass.setRoom(this);
+            // TODO: Set time as well ?
+        }
+        
+        boolean isClassAdded = classes.add(universityClass);
+        
+        return isPlacedInSchedule && isClassAdded;
+    }
+    
+    public boolean unassignClass(UniversityClass universityClass, AssignPolicy policy) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        // TODO: Remove from schedule
+        boolean isRemovedFromSchedule = true;
+        
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            universityClass.setRoom(null);
+            // TODO: Set time as well ?
+        }
+        
+        boolean isClassRemoved = classes.remove(universityClass);
+        
+        return isRemovedFromSchedule && isClassRemoved;
+    }
+    
+    public boolean unassignAllClasses() {
+        boolean areClassesUnassigned = true;
+        
+        for (UniversityClass universityClass : classes) {
+            boolean isClassUnassigned = unassignClass(universityClass, AssignPolicy.BOTH_WAYS);
+            areClassesUnassigned = areClassesUnassigned && isClassUnassigned;
+        }
+        
+        return areClassesUnassigned;
+    }
        
     // Room info
     private int buildingID;
@@ -161,4 +210,10 @@ public class Room implements IPersistable, IKeyHolder {
     
     // Extended room info
     Set<String> attributes;
+    
+    // Room schedule
+    Schedule schedule;
+    
+    // Classes assigned in this room
+    Set<UniversityClass> classes;
 }

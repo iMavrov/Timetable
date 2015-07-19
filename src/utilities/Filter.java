@@ -4,7 +4,9 @@
  */
 package utilities;
 
+import java.util.Set;
 import java.util.List;
+import java.util.HashSet;
 import java.util.ArrayList;
 
 /**
@@ -21,8 +23,8 @@ public class Filter<T extends Object> {
         return criteria.add(newCriterion);
     }
     
-    public List<T> filterList(List<T> itemList) {
-        List<T> filteredItemList = new ArrayList<>();
+    public Set<T> filterList(Set<T> itemList) {
+        Set<T> filteredItemList = new HashSet<>();
         
         for (T item : itemList) {
             boolean doesItemPass = true;
