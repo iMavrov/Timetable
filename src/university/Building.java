@@ -6,17 +6,24 @@ import java.io.BufferedWriter;
 import java.util.Objects;
 
 /**
- *
+ * Represents a faculty building of the university's campus.
+  * 
  * @author Mavrov
  */
 public class Building implements IPersistable, IKeyHolder {
     
     public Building() {
+        id = University.INVALID_ID;
         name = "";
     }
     
-    public Building(String buildingName) {
+    public Building(int buildingID, String buildingName) {
+        id = buildingID;
         name = buildingName;
+    }
+    
+    public int getID() {
+        return id;
     }
     
     public String getName() {
@@ -49,12 +56,13 @@ public class Building implements IPersistable, IKeyHolder {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 23 * hash + Objects.hashCode(this.name);
+        hash = 23 * hash + Objects.hashCode(name);
         return hash;
     }
     
     @Override
     public boolean load(BufferedReader reader) throws IOException {
+        id = Integer.valueOf(reader.readLine());
         name = reader.readLine();
         
         return true;
@@ -62,6 +70,9 @@ public class Building implements IPersistable, IKeyHolder {
 
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
+        writer.write(String.valueOf(id));
+        writer.newLine();
+        
         writer.write(name);
         writer.newLine();
         
@@ -70,8 +81,9 @@ public class Building implements IPersistable, IKeyHolder {
     
     @Override
     public boolean hasBadKey() {
-        return name.isEmpty();
+        return (name == null) || name.isEmpty();
     }
     
+    private int id;
     private String name;
 }

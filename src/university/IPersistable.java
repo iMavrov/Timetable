@@ -15,8 +15,8 @@ import java.io.IOException;
 public interface IPersistable {
     
     //
-    public boolean load(BufferedReader reader) throws IOException;
+    boolean load(BufferedReader reader) throws IOException;
     
     //
-    public boolean save(BufferedWriter writer) throws IOException;
+    boolean save(BufferedWriter writer) throws IOException;
 }

@@ -201,7 +201,7 @@ public class University implements IPersistable {
         return departments.get(departmentID);
     }
     
-    public boolean addLecturer(LecturerData newLecturer) {
+    public boolean addLecturer(Lecturer newLecturer) {
         if (newLecturer == null) {
             return false;
         }
@@ -217,7 +217,7 @@ public class University implements IPersistable {
         return lecturers.add(newLecturer);
     }
     
-    public boolean updateLecturer(LecturerData updatedLecturer) {
+    public boolean updateLecturer(Lecturer updatedLecturer) {
         if (updatedLecturer == null) {
             return false;
         }
@@ -242,7 +242,7 @@ public class University implements IPersistable {
         return true;
     }
     
-    public LecturerData getLecturer(int lecturerID) {
+    public Lecturer getLecturer(int lecturerID) {
         if (lecturerID < 0 || lecturers.size() <= lecturerID) {
             return null;
         }
@@ -293,11 +293,7 @@ public class University implements IPersistable {
         
         return programs.get(programID);
     }
-    
-    // http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection
-    // public List<Room> getFilteredRooms(RoomFilter filter);
-    // public List<Lecturer> getFilteredLecturers(LecturerFilter filter);
-    
+
     public boolean save() {
         boolean isSaveSuccessful = false;
         
@@ -343,7 +339,7 @@ public class University implements IPersistable {
         
         writer.write(String.valueOf(lecturers.size()));
         writer.newLine();
-        for (LecturerData lecturer : lecturers) {
+        for (Lecturer lecturer : lecturers) {
             lecturer.save(writer);
         }
 
@@ -401,7 +397,7 @@ public class University implements IPersistable {
         
         int lecturerCount = Integer.valueOf(reader.readLine());
         while (0 < lecturerCount) {
-            LecturerData newLecturer = new LecturerData();
+            Lecturer newLecturer = new Lecturer();
             newLecturer.load(reader);
             
             lecturers.add(newLecturer);
@@ -420,6 +416,20 @@ public class University implements IPersistable {
         return true;
     }
     
+    protected University() {
+        // Room view
+        buildings = new ArrayList<>();
+        rooms = new ArrayList<>();
+    
+        // Lecturer view
+        faculties = new ArrayList<>();
+        departments = new ArrayList<>();
+        lecturers = new ArrayList<>();
+    
+        // Student view
+        programs = new ArrayList<>();
+    }
+    
     @Override
     protected Object clone() {
         return university;
@@ -429,18 +439,6 @@ public class University implements IPersistable {
     private static final float DATABASE_VERSION = 1.0f;
     
     private static University university = null;
-    
-    // Room view
-    private List<Building> buildings;
-    private List<Room> rooms;
-    
-    // LecturerData view
-    private List<Faculty> faculties;
-    private List<Department> departments;
-    private List<LecturerData> lecturers;
-    
-    // Program view
-    private List<Program> programs;
     
     private static void initializeUniversity() {
         university = new University();
@@ -454,17 +452,15 @@ public class University implements IPersistable {
         }
     }
     
-    private University() {
-        // Room view
-        buildings = new ArrayList<>();
-        rooms = new ArrayList<>();
+    // Room view
+    private List<Building> buildings;
+    private List<Room> rooms;
     
-        // LecturerData view
-        faculties = new ArrayList<>();
-        departments = new ArrayList<>();
-        lecturers = new ArrayList<>();
+    // Lecturer view
+    private List<Faculty> faculties;
+    private List<Department> departments;
+    private List<Lecturer> lecturers;
     
-        // Student view
-        programs = new ArrayList<>();
-    }
+    // Program view
+    private List<Program> programs;
 }

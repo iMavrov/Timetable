@@ -1,4 +1,4 @@
-package university;
+package utilities;
 
 /**
  * Holds the different strategies for connecting entity objects.

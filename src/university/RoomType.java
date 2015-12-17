@@ -9,6 +9,7 @@ package university;
  * @author Mavrov
  */
 public enum RoomType {
+    UNKNOWN,
     LECTURE_HALL,
     SEMINAR_HALL,
     COMPUTER_LAB,

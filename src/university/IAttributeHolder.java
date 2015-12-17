@@ -4,16 +4,17 @@
  */
 package university;
 
+import java.util.Set;
+
 /**
  *
  * @author Mavrov
  */
 public interface IAttributeHolder {
     
-    public boolean hasAttribute(String attribute);
+    boolean hasAttribute(String attribute);
 
-    public boolean addAttribute(String attribute);
+    boolean addAttribute(String attribute);
 
-    public boolean removeAttribute(String attribute);
-    
+    boolean removeAttribute(String attribute);
 }

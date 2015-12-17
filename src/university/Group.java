@@ -4,17 +4,20 @@
  */
 package university;
 
+import utilities.AssignPolicy;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
+import utilities.IObservable;
+import utilities.UpdateReason;
 
 /**
  *
  * @author Mavrov
  */
-public class Group implements IPersistable {
+public class Group implements IPersistable, IKeyHolder, IAttributeHolder, IClassObserver, IObservable {
     
     public Group() {
         program = null;
@@ -25,6 +28,7 @@ public class Group implements IPersistable {
         
         capacity = 0;
         
+        schedule = new Schedule();
         classes = new HashSet<>();
     }
     
@@ -37,6 +41,7 @@ public class Group implements IPersistable {
         
         capacity = groupCapacity;
         
+        schedule = new Schedule();
         classes = new HashSet<>();
     }
     
@@ -122,61 +127,128 @@ public class Group implements IPersistable {
         return true;
     }
     
-    public boolean assignClass(UniversityClass universityClass, AssignPolicy policy) {
+    @Override
+    public boolean hasBadKey() {
+        // TODO:
+        return true;
+    }
+    
+    @Override
+    public boolean hasAttribute(String attribute) {
+        return attributes.contains(attribute);
+    }
+
+    @Override
+    public boolean addAttribute(String attribute) {
+        return attributes.add(attribute);
+    }
+
+    @Override
+    public boolean removeAttribute(String attribute) {
+        return attributes.remove(attribute);
+    }
+    
+    @Override
+    public boolean assign(UniversityClass universityClass, AssignPolicy policy) {
         if (universityClass == null) {
             return false;
         }
         
-        // TODO: Place class in schedule
-        boolean isPlacedInSchedule = true;
+        /*
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        */
         
+        if (classes.contains(universityClass)) {
+            return false;
+        }
+
+        // We are ok with the class so far. See if it is ok with us.
         boolean isGroupAssigned = true;
         if (policy == AssignPolicy.BOTH_WAYS) {
-            isGroupAssigned = universityClass.assignGroup(this, AssignPolicy.ONE_WAY);
+            isGroupAssigned = universityClass.assign(this, AssignPolicy.ONE_WAY);
         }
         
-        boolean isClassAdded = classes.add(universityClass);
+        boolean isClassAssigned = true;
+        if (isGroupAssigned) {
+            isClassAssigned = classes.add(universityClass);
+            
+            // TODO: Place in schedule
+            boolean isPlacedInSchedule = true;
+        }
         
-        return isPlacedInSchedule && isGroupAssigned && isClassAdded;
+        return isClassAssigned && isGroupAssigned;
     }
     
-    public boolean unassignClass(UniversityClass universityClass, AssignPolicy policy) {
+    @Override
+    public boolean unassign(UniversityClass universityClass, AssignPolicy policy) {
         if (universityClass == null) {
             return false;
         }
         
-        // TODO: Remove class from schedule
-        boolean isRemovedFromSchedule = true;
+        /*
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        */
         
-        boolean isGroupUnassigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isGroupUnassigned = universityClass.unassignGroup(this, AssignPolicy.ONE_WAY);
+        if (!classes.contains(universityClass)) {
+            return false;
         }
         
-        boolean isClassRemoved = classes.remove(universityClass);
+        // We are ok to remove the class so far. See if it is ok with us.    
+        boolean isGroupUnassigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isGroupUnassigned = universityClass.unassign(this, AssignPolicy.ONE_WAY);
+        }
         
-        return isRemovedFromSchedule && isGroupUnassigned && isClassRemoved;
+        boolean isClassUnassigned = true;
+        if (isGroupUnassigned) {
+            isClassUnassigned = classes.remove(universityClass);
+            
+            // TODO: Remove from schedule
+            boolean isRemovedFromSchedule = true;
+        }
+        
+        return isClassUnassigned && isGroupUnassigned;
     }
     
+    @Override
+    public boolean update(UniversityClass universityClass, UpdateReason reason) {
+        // TODO:
+        return true;
+    }
+    
+    @Override
     public boolean unassignAllClasses() {
         boolean areClassesUnassigned = true;
         
         for (UniversityClass universityClass : classes) {
-            boolean isClassUnassigned = unassignClass(universityClass, AssignPolicy.BOTH_WAYS);
+            boolean isClassUnassigned = unassign(universityClass, AssignPolicy.ONE_WAY);
             areClassesUnassigned = areClassesUnassigned && isClassUnassigned;
         }
+        
+        classes.clear();
+        
+        // TODO:
+        //schedule.clear();
         
         return areClassesUnassigned;
     }
     
+    // Parent program
     private Program program;
-    
     private int year;
     private int division;
     private int group;
     
     private int capacity;
     
+    // Extended room info
+    Set<String> attributes;
+    
     private Schedule schedule;
+    
     private Set<UniversityClass> classes;
 }

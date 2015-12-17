@@ -4,12 +4,14 @@
  */
 package university;
 
+import utilities.IObserver;
+
 /**
  *
  * @author Mavrov
  */
-public interface IKeyHolder {
+public interface IClassObserver extends IObserver<UniversityClass> {
     
-    boolean hasBadKey();
+    boolean unassignAllClasses();
     
 }

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
 
 import java.io.IOException;
@@ -10,42 +6,47 @@ import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
+import utilities.AssignPolicy;
+import utilities.IObservable;
+import utilities.UpdateReason;
 
 /**
  *
  * @author Mavrov
  */
-public class Room implements IPersistable, IKeyHolder {
+public class Room implements IPersistable, IKeyHolder, IAttributeHolder, IClassObserver, IObservable {
     
     public Room() {
-        buildingID = University.INVALID_ID;
+        building = null;
         name = "";
-        type = RoomType.LECTURE_HALL;
+        type = RoomType.UNKNOWN;
         capacity = 0;
         attributes = new HashSet<>();
         schedule = new Schedule();
+        classes = new HashSet<>();
     }
     
     public Room(
-            int roomBuildingID, 
+            Building roomBuilding, 
             String roomName, 
             RoomType roomType, 
             int roomCapacity,
             Set<String> roomAttributes) {
-        buildingID = roomBuildingID;
+        building = roomBuilding;
         name = roomName;
         type = roomType;
         capacity = roomCapacity;
         attributes = roomAttributes;
         schedule = new Schedule();
+        classes = new HashSet<>();
     }
     
-    public int getBuildingID() {
-        return buildingID;
+    public Building getBuilding() {
+        return building;
     }
 
-    public void setBuildingID(int newBuildingID) {
-        buildingID = newBuildingID;
+    public void setBuilding(Building newBuilding) {
+        building = newBuilding;
     }
 
     public String getName() {
@@ -72,18 +73,6 @@ public class Room implements IPersistable, IKeyHolder {
         capacity = newCapacity;
     }
     
-    public boolean hasAttribute(String attribute) {
-        return attributes.contains(attribute);
-    }
-
-    public boolean addAttribute(String attribute) {
-        return attributes.add(attribute);
-    }
-
-    public boolean removeAttribute(String attribute) {
-        return attributes.remove(attribute);
-    }
-    
     @Override
     public boolean equals(Object o) {
         if (o == null) {
@@ -95,25 +84,25 @@ public class Room implements IPersistable, IKeyHolder {
         }
         
         final Room other = (Room)o;
-        return (buildingID == other.buildingID) && name.equalsIgnoreCase(other.name);
+        return (building == other.building) && name.equals(other.name);
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 83 * hash + this.buildingID;
-        hash = 83 * hash + Objects.hashCode(this.name);
+        hash = 83 * hash + building.hashCode();
+        hash = 83 * hash + Objects.hashCode(name);
         return hash;
     }
 
     @Override
     public String toString() {
-        Building building = University.getInstance().getBuilding(buildingID);
         return building.getName() + ": " + name;
     }
     
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
+        /*
         writer.write(String.valueOf(buildingID));
         writer.newLine();
         writer.write(name);
@@ -129,12 +118,13 @@ public class Room implements IPersistable, IKeyHolder {
             writer.write(attribute);
             writer.newLine();
         }
-        
+        */
         return true;
     }
     
     @Override
     public boolean load(BufferedReader reader) throws IOException {
+        /*
         buildingID = Integer.valueOf(reader.readLine());
         name = reader.readLine();
         type = RoomType.valueOf(reader.readLine());
@@ -145,64 +135,121 @@ public class Room implements IPersistable, IKeyHolder {
             attributes.add(reader.readLine());
             --attributeCount;
         }
-        
+        */
         return true;
     }
     
     @Override
     public boolean hasBadKey() {
-        return (buildingID == University.INVALID_ID) || name.isEmpty();
+        return (building == null) || name.isEmpty();
     }
     
-    public boolean assignClass(UniversityClass universityClass, AssignPolicy policy) {
+    @Override
+    public boolean hasAttribute(String attribute) {
+        return attributes.contains(attribute);
+    }
+
+    @Override
+    public boolean addAttribute(String attribute) {
+        return attributes.add(attribute);
+    }
+
+    @Override
+    public boolean removeAttribute(String attribute) {
+        return attributes.remove(attribute);
+    }
+    
+    @Override
+    public boolean assign(UniversityClass universityClass, AssignPolicy policy) {
         if (universityClass == null) {
             return false;
         }
         
-        // TODO: Place in schedule
-        boolean isPlacedInSchedule = true;
+        /*
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        */
         
+        if (classes.contains(universityClass)) {
+            return false;
+        }
+
+        // We are ok with the class so far. See if it is ok with us.
+        boolean isRoomAssigned = true;
         if (policy == AssignPolicy.BOTH_WAYS) {
-            universityClass.setRoom(this);
-            // TODO: Set time as well ?
+            isRoomAssigned = universityClass.assign(this, AssignPolicy.ONE_WAY);
         }
         
-        boolean isClassAdded = classes.add(universityClass);
+        boolean isClassAssigned = true;
+        if (isRoomAssigned) {
+            isClassAssigned = classes.add(universityClass);
+            
+            // TODO: Place in schedule
+            boolean isPlacedInSchedule = true;
+        }
         
-        return isPlacedInSchedule && isClassAdded;
+        return isClassAssigned && isRoomAssigned;
     }
     
-    public boolean unassignClass(UniversityClass universityClass, AssignPolicy policy) {
+    @Override
+    public boolean unassign(UniversityClass universityClass, AssignPolicy policy) {
         if (universityClass == null) {
             return false;
         }
         
-        // TODO: Remove from schedule
-        boolean isRemovedFromSchedule = true;
+        /*
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        */
         
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            universityClass.setRoom(null);
-            // TODO: Set time as well ?
+        if (!classes.contains(universityClass)) {
+            return false;
         }
         
-        boolean isClassRemoved = classes.remove(universityClass);
+        // We are ok to remove the class so far. See if it is ok with us.    
+        boolean isRoomUnassigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isRoomUnassigned = universityClass.unassign(this, AssignPolicy.ONE_WAY);
+        }
         
-        return isRemovedFromSchedule && isClassRemoved;
+        boolean isClassUnassigned = true;
+        if (isRoomUnassigned) {
+            isClassUnassigned = classes.remove(universityClass);
+            
+            // TODO: Remove from schedule
+            boolean isRemovedFromSchedule = true;
+        }
+        
+        return isClassUnassigned && isRoomUnassigned;
     }
     
+    @Override
+    public boolean update(UniversityClass universityClass, UpdateReason reason) {
+        // TODO:        
+        return true;
+    }
+    
+    @Override
     public boolean unassignAllClasses() {
         boolean areClassesUnassigned = true;
         
         for (UniversityClass universityClass : classes) {
-            boolean isClassUnassigned = unassignClass(universityClass, AssignPolicy.BOTH_WAYS);
+            boolean isClassUnassigned = unassign(universityClass, AssignPolicy.ONE_WAY);
             areClassesUnassigned = areClassesUnassigned && isClassUnassigned;
         }
+        
+        classes.clear();
+        
+        // TODO:
+        //schedule.clear();
         
         return areClassesUnassigned;
     }
        
     // Room info
-    private int buildingID;
+    private Building building;
     private String name;
     
     private RoomType type;

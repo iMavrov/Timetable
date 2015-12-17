@@ -18,7 +18,7 @@ public class ClassPlacement {
         Random generator = Generator.getGenerator();
         day = (byte)generator.nextInt(Settings.STUDY_DAYS_PER_WEEK);
         hour = (byte)(Settings.EARLIEST_CLASS_START + generator.nextInt(Settings.CLASS_START_INTERVAL + 1));
-        roomID = (byte)generator.nextInt(University.getInstance().getRoomCount());
+        roomID = 0;//(byte)generator.nextInt(University.getInstance().getRoomCount());
     }
     
     private byte day;

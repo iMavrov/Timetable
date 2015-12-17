@@ -115,6 +115,11 @@ public class Program implements IPersistable, IKeyHolder {
         return semesterSubjects.get(semesterSubjectIndex);
     }
     
+    // TODO: Hide the Student Distribution class and expose its methods through Program
+    public StudentDistribution getStudentDistribution() {
+        return studentDistribution;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (o == null) {
@@ -205,8 +210,10 @@ public class Program implements IPersistable, IKeyHolder {
     private EducationDegree degree;       // Bachelor, Master
     private EducationModel model;         // Regular, Offsite, Distance
     
-    private String name;                  // Computer Science
+    private String name;                  // Computer Science, Software Engineering etc ...
     private int year;                     // 2014
     
     private List<List<Subject>> subjects; // Subjects by semesters
+    
+    private StudentDistribution studentDistribution;
 }

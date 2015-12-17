@@ -13,7 +13,7 @@ public class Timetable extends Speciment {
     public Timetable() {
         super();
         
-        subjectCount = University.getInstance().getSubjectsCount();
+        subjectCount = 0;//University.getInstance().getSubjectsCount();
         
         placement = new ArrayList<>(subjectCount);
         for (int i = 0; i < subjectCount; ++i) {

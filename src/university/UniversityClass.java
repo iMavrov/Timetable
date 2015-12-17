@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
 
 import java.io.IOException;
@@ -9,12 +5,15 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
+import utilities.IObservable;
+import utilities.AssignPolicy;
+import utilities.UpdateReason;
 
 /**
  *
  * @author Mavrov
  */
-public class UniversityClass implements IPersistable, IAttributeHolder {
+public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHolder, ILecturerObserver, IGroupObserver, IRoomObserver, IObservable {
     
     public UniversityClass() {
         subject = null;
@@ -31,12 +30,12 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
     
     public UniversityClass(
             Subject classSubject, UniversityClassType classType,
-            String subjectName, int classDuration, int classCapacity) {
+            String subjectName, int classDuration) {
         subject = classSubject;
         type = classType;
         name = subjectName;
         duration = classDuration;
-        capacity = classCapacity;
+        capacity = 0;
         attributes = new HashSet<>();
         room = null;
         startHour = -1;
@@ -45,15 +44,15 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         
         switch(type) {
             case LECTION: {
-                name = name + ": Lection";
+                name = name + LECTION_SUFFIX;
                 break;
             }
             case LABORATORY: {
-                name = name + ": Lab";
+                name = name + LAB_SUFFIX;
                 break;
             }
             case SEMINAR: {
-                name = name + ": Seminar";
+                name = name + SEMINAR_SUFFIX;
                 break;
             }
         }
@@ -75,6 +74,10 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         return duration;
     }
     
+    public void setDuration(int newDuration) {
+        duration = newDuration;
+    }
+    
     public int getCapacity() {
         return capacity;
     }
@@ -91,16 +94,8 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         return room;
     }
     
-    public void setRoom(Room classRoom) {
-        room = classRoom;
-    }
-    
     public int getStartHour() {
         return startHour;
-    }
-    
-    public void setStartHour(int newStartHour) {
-        startHour = newStartHour;
     }
     
     public boolean isPlaced() {
@@ -167,6 +162,12 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
     }
     
     @Override
+    public boolean hasBadKey() {
+        // TODO:
+        return true;
+    }
+    
+    @Override
     public boolean hasAttribute(String attribute) {
         return attributes.contains(attribute);
     }
@@ -181,128 +182,253 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
         return attributes.remove(attribute);
     }
     
-    public boolean assignLecturer(Lecturer lecturer, AssignPolicy policy) {
+    @Override
+    public boolean assign(Lecturer lecturer, AssignPolicy policy) {
         if (lecturer == null) {
             return false;
         }
         
-        boolean isClassAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassAssigned = lecturer.assignClass(this, AssignPolicy.ONE_WAY);
+        if (lecturer.hasBadKey()) {
+            return false;
         }
         
-        boolean isLecturerAdded = lecturers.add(lecturer);
-
-        return isClassAssigned && isLecturerAdded;
+        if (lecturers.contains(lecturer)) {
+            return false;
+        }
+        
+        // We are ok with the lecturer so far. See if he is ok with us.
+        boolean isClassAssigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassAssigned = lecturer.assign(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isLecturerAssigned = true;
+        if (isClassAssigned) {
+            isLecturerAssigned = lecturers.add(lecturer);
+        }
+        
+        return isLecturerAssigned && isClassAssigned;
     }
     
-    public boolean unassignLecturer(Lecturer lecturer, AssignPolicy policy) {
+    @Override
+    public boolean unassign(Lecturer lecturer, AssignPolicy policy) {
         if (lecturer == null) {
             return false;
         }
         
-        boolean isClassUnassigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassUnassigned = lecturer.unassignClass(this, AssignPolicy.ONE_WAY);
-        }
-        
-        boolean isLecturerRemoved = lecturers.remove(lecturer);
-        
-        return isClassUnassigned && isLecturerRemoved;
-    }
-    
-    public boolean assignGroup(Group group, AssignPolicy policy) {
-        if (group == null) {
+        if (lecturer.hasBadKey()) {
             return false;
         }
         
-        boolean isClassAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassAssigned = group.assignClass(this, AssignPolicy.ONE_WAY);
-        }
-        
-        boolean isGroupAdded = groups.add(group);
-
-        return isClassAssigned && isGroupAdded;
-    }
-    
-    public boolean unassignGroup(Group group, AssignPolicy policy) {
-        if (group == null) {
+        if (!lecturers.contains(lecturer)) {
             return false;
         }
         
+        // We are ok to remove the lecturer so far. See if he is ok with us.
         boolean isClassUnassigned = true;
         if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassUnassigned = group.unassignClass(this, AssignPolicy.ONE_WAY);
+            isClassUnassigned = lecturer.unassign(this, AssignPolicy.ONE_WAY);
         }
         
-        boolean isGroupRemoved = groups.remove(group);
+        boolean isLecturerUnassigned = true;
+        if (isClassUnassigned) {
+            isLecturerUnassigned = lecturers.remove(lecturer);
+        }
         
-        return isClassUnassigned && isGroupRemoved;
+        return isLecturerUnassigned && isClassUnassigned;
     }
     
-    public boolean assignRoom(Room newRoom, AssignPolicy policy) {
-        if (newRoom == null) {
-            return false;
-        }
-        
-        // Unassign from the old room
-        boolean isUnassignedFromOldRoom = true;
-        if (room != null) {
-            isUnassignedFromOldRoom = room.unassignClass(this, AssignPolicy.ONE_WAY);
-        }
-        
-        // Assign to the new room
-        boolean isClassAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassAssigned = newRoom.assignClass(this, AssignPolicy.ONE_WAY);
-        }
-        
-        room = newRoom;
-
-        return isUnassignedFromOldRoom && isClassAssigned;
+    @Override
+    public boolean update(Lecturer lecturer, UpdateReason reason) {
+        // TODO:
+        return true;
     }
     
-    public boolean unassignRoom(AssignPolicy policy) {      
-        boolean isClassUnassigned = true;
-        if ((room != null) && (policy == AssignPolicy.BOTH_WAYS)) {
-            isClassUnassigned = room.unassignClass(this, AssignPolicy.ONE_WAY);
-        }
-        
-        room = null;
-        
-        return isClassUnassigned;
-    }
-    
+    @Override
     public boolean unassignAllLecturers() {
         boolean areLecturersUnassigned = true;
         
         for (Lecturer lecturer : lecturers) {
-            boolean isLecturerUnassigned = unassignLecturer(lecturer, AssignPolicy.BOTH_WAYS);
+            boolean isLecturerUnassigned = unassign(lecturer, AssignPolicy.ONE_WAY);
             areLecturersUnassigned = areLecturersUnassigned && isLecturerUnassigned;
         }
+        
+        lecturers.clear();
         
         return areLecturersUnassigned;
     }
     
+    //@Override
+    public boolean assign(Group group, AssignPolicy policy) {
+        if (group == null) {
+            return false;
+        }
+        
+        if (group.hasBadKey()) {
+            return false;
+        }
+        
+        if (groups.contains(group)) {
+            return false;
+        }
+        
+        // We are ok with the group so far. See if it is ok with us.
+        boolean isClassAssigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassAssigned = group.assign(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isGroupAssigned = true;
+        if (isClassAssigned) {
+            isGroupAssigned = groups.add(group);
+            if (isGroupAssigned) {
+                int newCapacity = getCapacity() + group.getCapacity();
+                setCapacity(newCapacity);
+            }
+        }
+        
+        return isGroupAssigned && isClassAssigned;
+    }
+    
+    //@Override
+    public boolean unassign(Group group, AssignPolicy policy) {
+        if (group == null) {
+            return false;
+        }
+        
+        if (group.hasBadKey()) {
+            return false;
+        }
+        
+        if (!groups.contains(group)) {
+            return false;
+        }
+        
+        // We are ok to remove the group so far. See if it is ok with us.
+        boolean isClassUnassigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassUnassigned = group.unassign(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isGroupUnassigned = true;
+        if (isClassUnassigned) {
+            isGroupUnassigned = groups.remove(group);
+            if (isGroupUnassigned) {
+                int newCapacity = getCapacity() - group.getCapacity();
+                setCapacity(newCapacity);
+            }
+        }
+        
+        return isGroupUnassigned && isClassUnassigned;
+    }
+    
+    //@Override
+    public boolean update(Group group, UpdateReason reason) {
+        // TODO:
+        return true;
+    }
+    
+    @Override
     public boolean unassignAllGroups() {
         boolean areGroupsUnassigned = true;
         
         for (Group group : groups) {
-            boolean isGroupUnassigned = unassignGroup(group, AssignPolicy.BOTH_WAYS);
+            boolean isGroupUnassigned = unassign(group, AssignPolicy.ONE_WAY);
             areGroupsUnassigned = areGroupsUnassigned && isGroupUnassigned;
         }
         
+        groups.clear();
+        setCapacity(0);
+        
         return areGroupsUnassigned;
+    }
+    
+    //@Override
+    public boolean assign(Room newRoom, AssignPolicy policy) {
+        if (newRoom == null) {
+            return false;
+        }
+        
+        if (newRoom.hasBadKey()) {
+            return false;
+        }
+        
+        if (room != null && room.equals(newRoom)) {
+            return false;
+        }
+        
+        // We are ok with the room so far. See if it is ok with us.
+        boolean isClassAssigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassAssigned = newRoom.assign(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isRoomAssigned = true;
+        if (isClassAssigned) {
+            boolean isOldRoomUnassigned = unassign(room, AssignPolicy.BOTH_WAYS);
+            
+            boolean isNewRoomSet = setRoom(newRoom);
+            // TODO: Set new time placement and notify ???
+            
+            isRoomAssigned = isOldRoomUnassigned && isNewRoomSet;
+        }
+        
+        return isRoomAssigned && isClassAssigned;
+    }
+    
+    //@Override
+    // TODO: We do not need this argument
+    public boolean unassign(Room oldRoom, AssignPolicy policy) {
+        if (room == null) {
+            return false;
+        }
+        
+        if (room.hasBadKey()) {
+            return false;
+        }
+        
+        if (!room.equals(oldRoom)) {
+            return false;
+        }
+        
+        // We are ok to remove the room so far. See if it is ok with us.
+        boolean isClassUnassigned = true;
+        if (policy == AssignPolicy.BOTH_WAYS) {
+            isClassUnassigned = room.unassign(this, AssignPolicy.ONE_WAY);
+        }
+        
+        boolean isRoomUnassigned = true;
+        if (isClassUnassigned) {
+            isRoomUnassigned = setRoom(null);
+            // TODO: Reset time placement and notify ???
+        }
+        
+        return isRoomUnassigned && isClassUnassigned;
+    }
+    
+    //@Override
+    public boolean update(Room room, UpdateReason reason) {
+        // TODO:
+        return true;
+    }
+    
+    @Override
+    public boolean unassignAllRooms() {
+        boolean isRoomUnassigned = unassign(room, AssignPolicy.BOTH_WAYS);
+        return isRoomUnassigned;
     }
     
     public boolean unassignAll() {
         boolean areAllLecturersUnassigned = unassignAllLecturers();
         boolean areAllGroupsUnassigned = unassignAllGroups();
-        boolean isRoomUnassigned = unassignRoom(AssignPolicy.BOTH_WAYS);
+        boolean areAllRoomsUnassigned = unassignAllRooms();
         
-        return areAllLecturersUnassigned && areAllGroupsUnassigned && isRoomUnassigned;
+        return areAllLecturersUnassigned && areAllGroupsUnassigned && areAllRoomsUnassigned;
     }
+    
+    private static final String LECTION_SUFFIX = ": Лекция";
+    private static final String SEMINAR_SUFFIX = ": Упражнение";
+    private static final String LAB_SUFFIX = ": Практикум";
     
     // Parent subject
     private Subject subject;
@@ -333,4 +459,21 @@ public class UniversityClass implements IPersistable, IAttributeHolder {
     
     // Who teaches the class
     private Set<Lecturer> lecturers;
+    
+    private boolean setRoom(Room newRoom) {
+        room = newRoom;
+        
+        boolean areEveryoneOK = true;
+        for (Lecturer lecturer : lecturers) {
+            boolean isLecturerOK = lecturer.update(this, UpdateReason.CHANGE_ROOM);
+            areEveryoneOK = areEveryoneOK && isLecturerOK;
+        }
+
+        for (Group group : groups) {
+            boolean isGroupOK = group.update(this, UpdateReason.CHANGE_ROOM);
+            areEveryoneOK = areEveryoneOK && isGroupOK;
+        }
+        
+        return areEveryoneOK;
+    }
 }

@@ -19,11 +19,11 @@ public class StudentDistribution implements IPersistable {
         capacity = 0;
     }
     
+    public int getCapacity() {
+        return capacity;
+    }
+    
     public int getYearCount() {
-        if (years == null) {
-            return 0;
-        }
-        
         return years.size();
     }
     
@@ -51,10 +51,6 @@ public class StudentDistribution implements IPersistable {
         Year year = getYear(yearIndex);
         
         if (year == null) {
-            return 0;
-        }
-        
-        if (year.divisions == null) {
             return 0;
         }
         
@@ -88,10 +84,6 @@ public class StudentDistribution implements IPersistable {
             return 0;
         }
         
-        if (division.groups == null) {
-            return 0;
-        }
-        
         return division.groups.size();
     }
     
@@ -113,10 +105,6 @@ public class StudentDistribution implements IPersistable {
         }
         
         return group.capacity;
-    }
-    
-    public int getCapacity() {
-        return capacity;
     }
     
     @Override
@@ -204,9 +192,9 @@ public class StudentDistribution implements IPersistable {
     
     private class Year {
         
-        public Year() {
+        Year() {
             divisions = new ArrayList<>();
-            year = -1;
+            year = 0;
             capacity = 0;
         }
         
@@ -219,7 +207,7 @@ public class StudentDistribution implements IPersistable {
         
         public Division() {
             groups = new ArrayList<>();
-            division = -1;
+            division = 0;
             capacity = 0;
         }
         
@@ -231,7 +219,7 @@ public class StudentDistribution implements IPersistable {
     private class Group {
         
         public Group() {
-            group = -1;
+            group = 0;
             capacity = 0;
         }
         
@@ -243,10 +231,6 @@ public class StudentDistribution implements IPersistable {
     private int capacity;
     
     private Year getYear(int yearIndex) {
-        if (years == null) {
-            return null;
-        }
-        
         if (yearIndex < 0 || years.size() <= yearIndex) {
             return null;
         }
@@ -261,10 +245,6 @@ public class StudentDistribution implements IPersistable {
             return null;
         }
         
-        if (year.divisions == null) {
-            return null;
-        }
-        
         if (divisionIndex < 0 || year.divisions.size() <= divisionIndex) {
             return null;
         }
@@ -276,10 +256,6 @@ public class StudentDistribution implements IPersistable {
         Division division = getDivision(yearIndex, divisionIndex);
         
         if (division == null) {
-            return null;
-        }
-        
-        if (division.groups == null) {
             return null;
         }
         

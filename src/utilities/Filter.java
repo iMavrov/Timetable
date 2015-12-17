@@ -4,16 +4,19 @@
  */
 package utilities;
 
-import java.util.Set;
 import java.util.List;
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
- *
+ * Multi-purpose collection filter.
+ * 
+ * Inspired by:
+ * http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection
+ * 
  * @author Mavrov
  */
-public class Filter<T extends Object> {
+public class Filter<T extends Object, C extends Collection<T>> {
     
     public Filter() {
         criteria = new ArrayList<>();
@@ -23,10 +26,10 @@ public class Filter<T extends Object> {
         return criteria.add(newCriterion);
     }
     
-    public Set<T> filterList(Set<T> itemList) {
-        Set<T> filteredItemList = new HashSet<>();
+    public C filterList(C inputList, C outputList) {
+        outputList.clear();
         
-        for (T item : itemList) {
+        for (T item : inputList) {
             boolean doesItemPass = true;
             for (FilterCriterion<T> criterion : criteria) {
                 if (!criterion.passes(item)) {
@@ -35,11 +38,11 @@ public class Filter<T extends Object> {
                 }
             }
             if (doesItemPass) {
-                filteredItemList.add(item);
+                outputList.add(item);
             }
         }
         
-        return filteredItemList;
+        return outputList;
     }   
     
     private List<FilterCriterion<T>> criteria;

@@ -2,14 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package university;
+package utilities;
 
 /**
  *
  * @author Mavrov
  */
-public interface IKeyHolder {
-    
-    boolean hasBadKey();
+public interface IObservable {
+
+    //void handleObservation(Observation observation);
     
 }

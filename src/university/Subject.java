@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
 
 import java.io.IOException;
@@ -16,6 +12,7 @@ import java.util.Objects;
 public class Subject implements IPersistable, IKeyHolder {
     
     public Subject() {
+        program = null;
         code = "";
         fullName = "";
         shortName = "";
@@ -27,6 +24,7 @@ public class Subject implements IPersistable, IKeyHolder {
     }
     
     public Subject(
+            Program subjectProgram,
             String subjectCode,
             String subjectFullName,
             String subjectShortName,
@@ -35,14 +33,12 @@ public class Subject implements IPersistable, IKeyHolder {
             int subjectLectureHours,
             int subjectSeminarHours,
             int subjectLabHours) {
+        program = subjectProgram;
         code = subjectCode;
-        
         fullName = subjectFullName;
         shortName = subjectShortName;
-    
         type = subjectType;
         departmentID = subjectDepartmentID;
-        
         lectureHourCount = subjectLectureHours;
         seminarHourCount = subjectSeminarHours;
         labHourCount = subjectLabHours;
@@ -50,6 +46,10 @@ public class Subject implements IPersistable, IKeyHolder {
     
     public Program getProgram() {
         return program;
+    }
+    
+    public void setProgram(Program newProgram) {
+        program = newProgram;
     }
     
     public String getCode() {
@@ -111,6 +111,31 @@ public class Subject implements IPersistable, IKeyHolder {
         }
         
         return hasClass;
+    }
+    
+    public UniversityClass createNewClass(UniversityClassType classType) {
+        UniversityClass result = null;
+        
+        if (!hasClass(classType)) {
+            return result;
+        }
+        
+        switch (classType) {
+            case LECTION: {
+                result = new UniversityClass(this, UniversityClassType.LECTION, shortName, lectureHourCount);
+                break;
+            }
+            case SEMINAR: {
+                result = new UniversityClass(this, UniversityClassType.SEMINAR, shortName, seminarHourCount);
+                break;
+            }
+            case LABORATORY: {
+                result = new UniversityClass(this, UniversityClassType.LABORATORY, shortName, labHourCount);
+                break;
+            }
+        }
+        
+        return result;
     }
     
     public int getClassHourCount(UniversityClassType classType) {
@@ -229,12 +254,8 @@ public class Subject implements IPersistable, IKeyHolder {
         return false;
     }
     
-    
-    
     // Parent program
     private Program program;
-    private int semesterIndex;
-    private int semesterSubjectIndex;
     
     // Subject data
     private String code;
@@ -248,4 +269,6 @@ public class Subject implements IPersistable, IKeyHolder {
     private int lectureHourCount;
     private int seminarHourCount;
     private int labHourCount;
+    
+    // TODO: Keep track of the created classes.
 }
