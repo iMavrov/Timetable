@@ -12,16 +12,14 @@ import utilities.FilterCriterion;
  */
 public class ProgramFilterCriterion implements FilterCriterion<UniversityClass> {
 
-    public ProgramFilterCriterion(int programID, int semesterIndex) {
-        this.programID = programID;
-        this.semesterIndex = semesterIndex;
+    public ProgramFilterCriterion(Program filterProgram) {
+        program = filterProgram;
     }
     
     @Override
     public boolean passes(UniversityClass item) {
-        return (item.getProgramID() == programID) && (item.getSemesterIndex() == semesterIndex);
+        return (item.getSubject().getProgram() == program);
     }
     
-    private int programID;
-    private int semesterIndex;
+    private Program program;
 }

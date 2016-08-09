@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
 
 import java.io.IOException;
@@ -15,35 +11,39 @@ import java.util.Objects;
  *
  * @author Mavrov
  */
-public class Room implements IPersistable, IKeyHolder {
+public class Room extends ScheduleHolder {
     
     public Room() {
-        buildingID = University.INVALID_ID;
+        super();
+        
+        building = null;
         name = "";
-        type = RoomType.LECTURE_HALL;
+        type = RoomType.UNKNOWN;
         capacity = 0;
         attributes = new HashSet<>();
     }
     
     public Room(
-            int roomBuildingID, 
+            Building roomBuilding, 
             String roomName, 
             RoomType roomType, 
             int roomCapacity,
             Set<String> roomAttributes) {
-        buildingID = roomBuildingID;
+        super();
+        
+        building = roomBuilding;
         name = roomName;
         type = roomType;
         capacity = roomCapacity;
         attributes = roomAttributes;
     }
     
-    public int getBuildingID() {
-        return buildingID;
+    public Building getBuilding() {
+        return building;
     }
 
-    public void setBuildingID(int newBuildingID) {
-        buildingID = newBuildingID;
+    public void setBuilding(Building newBuilding) {
+        building = newBuilding;
     }
 
     public String getName() {
@@ -70,18 +70,6 @@ public class Room implements IPersistable, IKeyHolder {
         capacity = newCapacity;
     }
     
-    public boolean hasAttribute(String attribute) {
-        return attributes.contains(attribute);
-    }
-
-    public boolean addAttribute(String attribute) {
-        return attributes.add(attribute);
-    }
-
-    public boolean removeAttribute(String attribute) {
-        return attributes.remove(attribute);
-    }
-    
     @Override
     public boolean equals(Object o) {
         if (o == null) {
@@ -93,25 +81,25 @@ public class Room implements IPersistable, IKeyHolder {
         }
         
         final Room other = (Room)o;
-        return (buildingID == other.buildingID) && name.equalsIgnoreCase(other.name);
+        return (building == other.building) && name.equals(other.name);
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 83 * hash + this.buildingID;
-        hash = 83 * hash + Objects.hashCode(this.name);
+        hash = 83 * hash + building.hashCode();
+        hash = 83 * hash + Objects.hashCode(name);
         return hash;
     }
 
     @Override
     public String toString() {
-        Building building = University.getInstance().getBuilding(buildingID);
         return building.getName() + ": " + name;
     }
     
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
+        /*
         writer.write(String.valueOf(buildingID));
         writer.newLine();
         writer.write(name);
@@ -127,12 +115,13 @@ public class Room implements IPersistable, IKeyHolder {
             writer.write(attribute);
             writer.newLine();
         }
-        
+        */
         return true;
     }
     
     @Override
     public boolean load(BufferedReader reader) throws IOException {
+        /*
         buildingID = Integer.valueOf(reader.readLine());
         name = reader.readLine();
         type = RoomType.valueOf(reader.readLine());
@@ -143,22 +132,68 @@ public class Room implements IPersistable, IKeyHolder {
             attributes.add(reader.readLine());
             --attributeCount;
         }
-        
+        */
         return true;
     }
     
     @Override
     public boolean hasBadKey() {
-        return (buildingID == University.INVALID_ID) || name.isEmpty();
+        return (building == null) || name.isEmpty();
+    }
+    
+    @Override
+    public void onRoomPlacement(UniversityClass.PlaceEvent event) {
+        UniversityClass universityClass = event.getUniversityClass();
+        if (event.keepsRoom()) {
+            schedule.update(universityClass);
+        } else {
+            schedule.add(universityClass);
+        }
+    }
+    
+    @Override
+    public void onRoomDisplacement(UniversityClass.DisplaceEvent event) {
+        UniversityClass universityClass = event.getUniversityClass();
+        schedule.remove(universityClass);
+    }
+    
+    public boolean addClass(UniversityClass universityClass, int startHour) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        
+        if (schedule.contains(universityClass)) {
+            return false;
+        }
+        
+        return universityClass.place(this, startHour);
+    }
+    
+    @Override
+    public boolean removeClass(UniversityClass universityClass) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        
+        if (!schedule.contains(universityClass)) {
+            return false;
+        }
+        
+        return universityClass.displace();
     }
        
     // Room info
-    private int buildingID;
+    private Building building;
     private String name;
     
     private RoomType type;
     private int capacity;
-    
-    // Extended room info
-    Set<String> attributes;
 }

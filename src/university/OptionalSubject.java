@@ -8,8 +8,10 @@ package university;
  *
  * @author Mavrov
  */
-public interface IKeyHolder {
+public class OptionalSubject extends Subject {
     
-    boolean hasBadKey();
     
+    
+    private SubjectCategory category;
+    private int capacity;
 }

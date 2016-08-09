@@ -1,27 +1,26 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package university;
 
-import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Objects;
+import university.UniversityClass.AddLecturerEvent;
+import university.UniversityClass.RemoveLecturerEvent;
 
 /**
- *
+ * Represents a university lecturer.
+ * 
  * @author Mavrov
  */
-public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder {
+public class Lecturer extends ScheduleHolder {
     
     public Lecturer() {
+        super();
+        
         facultyID = University.INVALID_ID;
         departmentID = University.INVALID_ID;
         name = "";
-        attributes = new HashSet<>();
     }
     
     public Lecturer(
@@ -29,12 +28,13 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder {
             int lecturerDepartmentID,
             String lecturerName,
             Set<String> lecturerAttributes) {
+        super();
+        
         facultyID = lecturerFacultyID;
         departmentID = lecturerDepartmentID;
         name = lecturerName;
-        attributes = lecturerAttributes;
     }
-
+    
     public int getFacultyID() {
         return facultyID;
     }
@@ -59,6 +59,7 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder {
         name = lecturerName;
     }
     
+    // From Object
     @Override
     public boolean equals(Object o) {
         if (o == null) {
@@ -86,6 +87,7 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder {
         return name;
     }
     
+    // From IPersistable
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
         writer.write(String.valueOf(facultyID));
@@ -120,33 +122,70 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder {
         return true;
     }
     
+    // From IAttributeHolder
     @Override
     public boolean hasBadKey() {
         return (departmentID == University.INVALID_ID) || name.isEmpty();
     }
     
+    // From ScheduleHolder
     @Override
-    public boolean hasAttribute(String attribute) {
-        return attributes.contains(attribute);
-    }
-
-    @Override
-    public boolean addAttribute(String attribute) {
-        return attributes.add(attribute);
-    }
-
-    @Override
-    public boolean removeAttribute(String attribute) {
-        return attributes.remove(attribute);
+    public void onAddedLecturer(AddLecturerEvent event) {
+        Lecturer lecturer = event.getLecturer();
+        if (equals(lecturer)) {
+            UniversityClass universityClass = event.getUniversityClass();
+            schedule.add(universityClass);
+        }
     }
     
-    // Lecturer position info
+    @Override
+    public void onRemovedLecturer(RemoveLecturerEvent event) {
+        Lecturer lecturer = event.getLecturer();
+        if (equals(lecturer)) {
+            UniversityClass universityClass = event.getUniversityClass();
+            schedule.remove(universityClass);
+        }
+    }
+    
+    public boolean addClass(UniversityClass universityClass) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        
+        if (schedule.contains(universityClass)) {
+            return false;
+        }
+        
+        return universityClass.addLecturer(this);
+    }
+    
+    @Override
+    public boolean removeClass(UniversityClass universityClass) {
+        if (universityClass == null) {
+            return false;
+        }
+        
+        if (universityClass.hasBadKey()) {
+            return false;
+        }
+        
+        if (!schedule.contains(universityClass)) {
+            return false;
+        }
+        
+        return universityClass.removeLecturer(this);
+    }
+    
+    // LecturerData position info
     private int facultyID;
     private int departmentID;
     
-    // Lecturer info
+    // LecturerData info
     private String name;
     
-    // Lecturer class requirements
-    private Set<String> attributes;
+    //private boolean isStateLecturer;
 }

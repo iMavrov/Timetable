@@ -9,8 +9,8 @@ package university;
  * @author Mavrov
  */
 public enum UniversityClassType {
+    UNKNOWN,
     LECTION,
     LABORATORY,
     SEMINAR,
-    
 }

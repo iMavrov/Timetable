@@ -4,12 +4,14 @@
  */
 package university;
 
+import utilities.IObserver;
+
 /**
  *
  * @author Mavrov
  */
-public interface IKeyHolder {
+public interface IRoomObserver extends IObserver<Room> {
     
-    boolean hasBadKey();
+    boolean unassignAllRooms();
     
 }
