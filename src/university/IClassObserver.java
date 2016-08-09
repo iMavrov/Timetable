@@ -5,6 +5,12 @@
 package university;
 
 import utilities.IObserver;
+import university.UniversityClass.AddGroupEvent;
+import university.UniversityClass.AddLecturerEvent;
+import university.UniversityClass.RemoveGroupEvent;
+import university.UniversityClass.RemoveLecturerEvent;
+import university.UniversityClass.PlaceEvent;
+import university.UniversityClass.DisplaceEvent;
 
 /**
  *
@@ -12,6 +18,15 @@ import utilities.IObserver;
  */
 public interface IClassObserver extends IObserver<UniversityClass> {
     
-    boolean unassignAllClasses();
+    void onAddedLecturer(AddLecturerEvent event);
     
+    void onRemovedLecturer(RemoveLecturerEvent event);
+    
+    void onAddedGroup(AddGroupEvent event);
+    
+    void onRemovedGroup(RemoveGroupEvent event);
+    
+    void onRoomPlacement(PlaceEvent event);
+    
+    void onRoomDisplacement(DisplaceEvent event);
 }

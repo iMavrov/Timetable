@@ -8,8 +8,10 @@ package utilities;
  *
  * @author Mavrov
  */
-public interface IObservable {
+public interface IObservable<T> {
 
-    //void handleObservation(Observation observation);
+    void updateObservers(Observation observation);
     
+    void addObserver(IObserver<T> observer);
+    void removeObserver(IObserver<T> observer);
 }

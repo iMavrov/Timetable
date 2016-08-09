@@ -1,29 +1,26 @@
 package university;
 
-import utilities.AssignPolicy;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Objects;
-import utilities.IObservable;
-import utilities.UpdateReason;
+import university.UniversityClass.AddLecturerEvent;
+import university.UniversityClass.RemoveLecturerEvent;
 
 /**
  * Represents a university lecturer.
  * 
  * @author Mavrov
  */
-public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder, IClassObserver, IObservable {
+public class Lecturer extends ScheduleHolder {
     
     public Lecturer() {
+        super();
+        
         facultyID = University.INVALID_ID;
         departmentID = University.INVALID_ID;
         name = "";
-        attributes = new HashSet<>();
-        schedule = new Schedule();
-        classes = new HashSet<>();
     }
     
     public Lecturer(
@@ -31,12 +28,11 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder, ICl
             int lecturerDepartmentID,
             String lecturerName,
             Set<String> lecturerAttributes) {
+        super();
+        
         facultyID = lecturerFacultyID;
         departmentID = lecturerDepartmentID;
         name = lecturerName;
-        attributes = lecturerAttributes;
-        schedule = new Schedule();
-        classes = new HashSet<>();
     }
     
     public int getFacultyID() {
@@ -63,6 +59,7 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder, ICl
         name = lecturerName;
     }
     
+    // From Object
     @Override
     public boolean equals(Object o) {
         if (o == null) {
@@ -90,6 +87,7 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder, ICl
         return name;
     }
     
+    // From IPersistable
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
         writer.write(String.valueOf(facultyID));
@@ -124,113 +122,62 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder, ICl
         return true;
     }
     
+    // From IAttributeHolder
     @Override
     public boolean hasBadKey() {
         return (departmentID == University.INVALID_ID) || name.isEmpty();
     }
     
+    // From ScheduleHolder
     @Override
-    public boolean hasAttribute(String attribute) {
-        return attributes.contains(attribute);
-    }
-
-    @Override
-    public boolean addAttribute(String attribute) {
-        return attributes.add(attribute);
-    }
-
-    @Override
-    public boolean removeAttribute(String attribute) {
-        return attributes.remove(attribute);
+    public void onAddedLecturer(AddLecturerEvent event) {
+        Lecturer lecturer = event.getLecturer();
+        if (equals(lecturer)) {
+            UniversityClass universityClass = event.getUniversityClass();
+            schedule.add(universityClass);
+        }
     }
     
     @Override
-    public boolean assign(UniversityClass universityClass, AssignPolicy policy) {
+    public void onRemovedLecturer(RemoveLecturerEvent event) {
+        Lecturer lecturer = event.getLecturer();
+        if (equals(lecturer)) {
+            UniversityClass universityClass = event.getUniversityClass();
+            schedule.remove(universityClass);
+        }
+    }
+    
+    public boolean addClass(UniversityClass universityClass) {
         if (universityClass == null) {
             return false;
         }
         
-        /*
         if (universityClass.hasBadKey()) {
             return false;
         }
-        */
         
-        if (classes.contains(universityClass)) {
+        if (schedule.contains(universityClass)) {
             return false;
         }
-
-        // We are ok with the class so far. See if it is ok with us.
-        boolean isLecturerAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isLecturerAssigned = universityClass.assign(this, AssignPolicy.ONE_WAY);
-        }
         
-        boolean isClassAssigned = true;
-        if (isLecturerAssigned) {
-            isClassAssigned = classes.add(universityClass);
-            
-            // TODO: Place in schedule
-            boolean isPlacedInSchedule = true;
-        }
-        
-        return isClassAssigned && isLecturerAssigned;
+        return universityClass.addLecturer(this);
     }
     
     @Override
-    public boolean unassign(UniversityClass universityClass, AssignPolicy policy) {
+    public boolean removeClass(UniversityClass universityClass) {
         if (universityClass == null) {
             return false;
         }
         
-        /*
         if (universityClass.hasBadKey()) {
             return false;
         }
-        */
         
-        if (!classes.contains(universityClass)) {
+        if (!schedule.contains(universityClass)) {
             return false;
         }
         
-        // We are ok to remove the class so far. See if it is ok with us.    
-        boolean isLecturerUnassigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isLecturerUnassigned = universityClass.unassign(this, AssignPolicy.ONE_WAY);
-        }
-        
-        boolean isClassUnassigned = true;
-        if (isLecturerUnassigned) {
-            isClassUnassigned = classes.remove(universityClass);
-            
-            // TODO: Remove from schedule
-            boolean isRemovedFromSchedule = true;
-        }
-        
-        return isClassUnassigned && isLecturerUnassigned;
-    }
-    
-    @Override
-    public boolean update(UniversityClass universityClass, UpdateReason reason) {
-        // TODO:
-        return true;
-    }
-    
-    @Override
-    public boolean unassignAllClasses() {
-        boolean areClassesUnassigned = true;
-        
-        for (UniversityClass universityClass : classes) {
-            boolean isClassUnassigned = unassign(universityClass, AssignPolicy.ONE_WAY);
-            areClassesUnassigned = areClassesUnassigned && isClassUnassigned;
-        }
-        
-        classes.clear();
-        
-        // TODO:
-        //schedule.clear();
-        
-        return areClassesUnassigned;
+        return universityClass.removeLecturer(this);
     }
     
     // LecturerData position info
@@ -240,11 +187,5 @@ public class Lecturer implements IPersistable, IKeyHolder, IAttributeHolder, ICl
     // LecturerData info
     private String name;
     
-    // LecturerData class requirements
-    private Set<String> attributes;
-    
     //private boolean isStateLecturer;
-    
-    private Schedule schedule;
-    private Set<UniversityClass> classes;
 }

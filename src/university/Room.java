@@ -6,24 +6,21 @@ import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
-import utilities.AssignPolicy;
-import utilities.IObservable;
-import utilities.UpdateReason;
 
 /**
  *
  * @author Mavrov
  */
-public class Room implements IPersistable, IKeyHolder, IAttributeHolder, IClassObserver, IObservable {
+public class Room extends ScheduleHolder {
     
     public Room() {
+        super();
+        
         building = null;
         name = "";
         type = RoomType.UNKNOWN;
         capacity = 0;
         attributes = new HashSet<>();
-        schedule = new Schedule();
-        classes = new HashSet<>();
     }
     
     public Room(
@@ -32,13 +29,13 @@ public class Room implements IPersistable, IKeyHolder, IAttributeHolder, IClassO
             RoomType roomType, 
             int roomCapacity,
             Set<String> roomAttributes) {
+        super();
+        
         building = roomBuilding;
         name = roomName;
         type = roomType;
         capacity = roomCapacity;
         attributes = roomAttributes;
-        schedule = new Schedule();
-        classes = new HashSet<>();
     }
     
     public Building getBuilding() {
@@ -145,107 +142,52 @@ public class Room implements IPersistable, IKeyHolder, IAttributeHolder, IClassO
     }
     
     @Override
-    public boolean hasAttribute(String attribute) {
-        return attributes.contains(attribute);
-    }
-
-    @Override
-    public boolean addAttribute(String attribute) {
-        return attributes.add(attribute);
-    }
-
-    @Override
-    public boolean removeAttribute(String attribute) {
-        return attributes.remove(attribute);
+    public void onRoomPlacement(UniversityClass.PlaceEvent event) {
+        UniversityClass universityClass = event.getUniversityClass();
+        if (event.keepsRoom()) {
+            schedule.update(universityClass);
+        } else {
+            schedule.add(universityClass);
+        }
     }
     
     @Override
-    public boolean assign(UniversityClass universityClass, AssignPolicy policy) {
+    public void onRoomDisplacement(UniversityClass.DisplaceEvent event) {
+        UniversityClass universityClass = event.getUniversityClass();
+        schedule.remove(universityClass);
+    }
+    
+    public boolean addClass(UniversityClass universityClass, int startHour) {
         if (universityClass == null) {
             return false;
         }
         
-        /*
         if (universityClass.hasBadKey()) {
             return false;
         }
-        */
         
-        if (classes.contains(universityClass)) {
+        if (schedule.contains(universityClass)) {
             return false;
         }
-
-        // We are ok with the class so far. See if it is ok with us.
-        boolean isRoomAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isRoomAssigned = universityClass.assign(this, AssignPolicy.ONE_WAY);
-        }
         
-        boolean isClassAssigned = true;
-        if (isRoomAssigned) {
-            isClassAssigned = classes.add(universityClass);
-            
-            // TODO: Place in schedule
-            boolean isPlacedInSchedule = true;
-        }
-        
-        return isClassAssigned && isRoomAssigned;
+        return universityClass.place(this, startHour);
     }
     
     @Override
-    public boolean unassign(UniversityClass universityClass, AssignPolicy policy) {
+    public boolean removeClass(UniversityClass universityClass) {
         if (universityClass == null) {
             return false;
         }
         
-        /*
         if (universityClass.hasBadKey()) {
             return false;
         }
-        */
         
-        if (!classes.contains(universityClass)) {
+        if (!schedule.contains(universityClass)) {
             return false;
         }
         
-        // We are ok to remove the class so far. See if it is ok with us.    
-        boolean isRoomUnassigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isRoomUnassigned = universityClass.unassign(this, AssignPolicy.ONE_WAY);
-        }
-        
-        boolean isClassUnassigned = true;
-        if (isRoomUnassigned) {
-            isClassUnassigned = classes.remove(universityClass);
-            
-            // TODO: Remove from schedule
-            boolean isRemovedFromSchedule = true;
-        }
-        
-        return isClassUnassigned && isRoomUnassigned;
-    }
-    
-    @Override
-    public boolean update(UniversityClass universityClass, UpdateReason reason) {
-        // TODO:        
-        return true;
-    }
-    
-    @Override
-    public boolean unassignAllClasses() {
-        boolean areClassesUnassigned = true;
-        
-        for (UniversityClass universityClass : classes) {
-            boolean isClassUnassigned = unassign(universityClass, AssignPolicy.ONE_WAY);
-            areClassesUnassigned = areClassesUnassigned && isClassUnassigned;
-        }
-        
-        classes.clear();
-        
-        // TODO:
-        //schedule.clear();
-        
-        return areClassesUnassigned;
+        return universityClass.displace();
     }
        
     // Room info
@@ -254,13 +196,4 @@ public class Room implements IPersistable, IKeyHolder, IAttributeHolder, IClassO
     
     private RoomType type;
     private int capacity;
-    
-    // Extended room info
-    Set<String> attributes;
-    
-    // Room schedule
-    Schedule schedule;
-    
-    // Classes assigned in this room
-    Set<UniversityClass> classes;
 }

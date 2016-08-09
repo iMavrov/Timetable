@@ -5,15 +5,154 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
-import utilities.IObservable;
-import utilities.AssignPolicy;
-import utilities.UpdateReason;
 
 /**
  *
  * @author Mavrov
  */
-public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHolder, ILecturerObserver, IGroupObserver, IRoomObserver, IObservable {
+public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHolder {
+    
+    public abstract class IClassEvent {
+        public abstract void notifyObserver(IClassObserver classObserver);
+        
+        public UniversityClass getUniversityClass() {
+            return universityClass;
+        }
+        
+        protected UniversityClass universityClass;
+        
+        protected IClassEvent(UniversityClass inputClass) {
+            universityClass = inputClass;
+        }
+    }
+    
+    public class AddLecturerEvent extends IClassEvent {
+        // From IClassEvent
+        @Override
+        public void notifyObserver(IClassObserver classObserver) {
+            if (classObserver != null) {
+                classObserver.onAddedLecturer(this);
+            }
+        }
+        
+        public Lecturer getLecturer() {
+            return lecturer;
+        }
+        
+        private Lecturer lecturer;
+        
+        private AddLecturerEvent(UniversityClass inputClass, Lecturer inputLecturer) {
+            super(inputClass);
+            
+            lecturer = inputLecturer;
+        }
+    }
+    
+    public class RemoveLecturerEvent extends IClassEvent {
+        @Override
+        public void notifyObserver(IClassObserver classObserver) {
+            if (classObserver != null) {
+                classObserver.onRemovedLecturer(this);
+            }
+        }
+        
+        public Lecturer getLecturer() {
+            return lecturer;
+        }
+        
+        private Lecturer lecturer;
+        
+        private RemoveLecturerEvent(UniversityClass inputClass, Lecturer inputLecturer) {
+            super(inputClass);
+            
+            lecturer = inputLecturer;
+        }
+    }
+    
+    public class AddGroupEvent extends IClassEvent {
+        @Override
+        public void notifyObserver(IClassObserver classObserver) {
+            if (classObserver != null) {
+                classObserver.onAddedGroup(this);
+            }
+        }
+        
+        public Group getGroup() {
+            return group;
+        }
+        
+        private Group group;
+        
+        private AddGroupEvent(UniversityClass inputClass, Group inputGroup) {
+            super(inputClass);
+            
+            group = inputGroup;
+        }
+    }
+    
+    public class RemoveGroupEvent extends IClassEvent {
+        @Override
+        public void notifyObserver(IClassObserver classObserver) {
+            if (classObserver != null) {
+                classObserver.onRemovedGroup(this);
+            }
+        }
+        
+        public Group getGroup() {
+            return group;
+        }
+        
+        private Group group;
+        
+        private RemoveGroupEvent(UniversityClass inputClass, Group inputGroup) {
+            super(inputClass);
+            
+            group = inputGroup;
+        }
+    }
+    
+    public class PlaceEvent extends IClassEvent {
+        @Override
+        public void notifyObserver(IClassObserver classObserver) {
+            if (classObserver != null) {
+                classObserver.onRoomPlacement(this);
+            }
+        }
+        
+        public boolean keepsRoom() {
+            return keepRoom;
+        }
+        
+        public boolean keepsStartHour() {
+            return keepStartHour;
+        }
+
+        /// Keeps the room. Just update the schedule. Cannot keep the start hour as well.
+        private boolean keepRoom;
+        
+        /// Keeps the start hour. Just update the room. Cannot keep the room as well.
+        private boolean keepStartHour;
+        
+        private PlaceEvent(UniversityClass inputClass, boolean keepsRoom, boolean keepsStartHour) {
+            super(inputClass);
+            
+            keepRoom = keepsRoom;
+            keepStartHour = keepsStartHour;
+        }
+    }
+    
+    public class DisplaceEvent extends IClassEvent {
+        @Override
+        public void notifyObserver(IClassObserver classObserver) {
+            if (classObserver != null) {
+                classObserver.onRoomDisplacement(this);
+            }
+        }
+        
+        private DisplaceEvent(UniversityClass inputClass) {
+            super(inputClass);
+        }
+    }
     
     public UniversityClass() {
         subject = null;
@@ -74,16 +213,8 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
         return duration;
     }
     
-    public void setDuration(int newDuration) {
-        duration = newDuration;
-    }
-    
     public int getCapacity() {
         return capacity;
-    }
-    
-    public void setCapacity(int newCapacity) {
-        capacity = newCapacity;
     }
     
     public Set<String> getAttributes() {
@@ -99,7 +230,7 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
     }
     
     public boolean isPlaced() {
-        return (room != null) && (0 <= startHour) && (startHour < Schedule.HOURS_PER_WEEK);
+        return (room != null) && (0 <= startHour) && (startHour + duration < Schedule.HOURS_PER_WEEK);
     }
     
     public Set<Group> getGroups() {
@@ -181,9 +312,8 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
     public boolean removeAttribute(String attribute) {
         return attributes.remove(attribute);
     }
-    
-    @Override
-    public boolean assign(Lecturer lecturer, AssignPolicy policy) {
+
+    public boolean addLecturer(Lecturer lecturer) {
         if (lecturer == null) {
             return false;
         }
@@ -192,26 +322,18 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
             return false;
         }
         
-        if (lecturers.contains(lecturer)) {
-            return false;
+        // Note: Set would not allow duplicates and return false.
+        boolean isLecturerAdded = lecturers.add(lecturer);
+        
+        if (isLecturerAdded) {
+            AddLecturerEvent addLecturerEvent = new AddLecturerEvent(this, lecturer);
+            notifyObservers(addLecturerEvent);
         }
         
-        // We are ok with the lecturer so far. See if he is ok with us.
-        boolean isClassAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassAssigned = lecturer.assign(this, AssignPolicy.ONE_WAY);
-        }
-        
-        boolean isLecturerAssigned = true;
-        if (isClassAssigned) {
-            isLecturerAssigned = lecturers.add(lecturer);
-        }
-        
-        return isLecturerAssigned && isClassAssigned;
+        return isLecturerAdded;
     }
     
-    @Override
-    public boolean unassign(Lecturer lecturer, AssignPolicy policy) {
+    public boolean removeLecturer(Lecturer lecturer) {
         if (lecturer == null) {
             return false;
         }
@@ -224,42 +346,15 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
             return false;
         }
         
-        // We are ok to remove the lecturer so far. See if he is ok with us.
-        boolean isClassUnassigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassUnassigned = lecturer.unassign(this, AssignPolicy.ONE_WAY);
-        }
+        RemoveLecturerEvent removeLecturerEvent = new RemoveLecturerEvent(this, lecturer);
+        notifyObservers(removeLecturerEvent);
+
+        boolean isLecturerRemoved = lecturers.remove(lecturer);
         
-        boolean isLecturerUnassigned = true;
-        if (isClassUnassigned) {
-            isLecturerUnassigned = lecturers.remove(lecturer);
-        }
-        
-        return isLecturerUnassigned && isClassUnassigned;
+        return isLecturerRemoved;
     }
-    
-    @Override
-    public boolean update(Lecturer lecturer, UpdateReason reason) {
-        // TODO:
-        return true;
-    }
-    
-    @Override
-    public boolean unassignAllLecturers() {
-        boolean areLecturersUnassigned = true;
-        
-        for (Lecturer lecturer : lecturers) {
-            boolean isLecturerUnassigned = unassign(lecturer, AssignPolicy.ONE_WAY);
-            areLecturersUnassigned = areLecturersUnassigned && isLecturerUnassigned;
-        }
-        
-        lecturers.clear();
-        
-        return areLecturersUnassigned;
-    }
-    
-    //@Override
-    public boolean assign(Group group, AssignPolicy policy) {
+
+    public boolean addGroup(Group group) {
         if (group == null) {
             return false;
         }
@@ -268,30 +363,20 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
             return false;
         }
         
-        if (groups.contains(group)) {
-            return false;
+        // Note: Set would not allow duplicates and return false.
+        boolean isGroupAdded = groups.add(group);
+        
+        if (isGroupAdded) {
+            capacity += group.getCapacity();
+            
+            AddGroupEvent addGroupEvent = new AddGroupEvent(this, group);
+            notifyObservers(addGroupEvent);
         }
         
-        // We are ok with the group so far. See if it is ok with us.
-        boolean isClassAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassAssigned = group.assign(this, AssignPolicy.ONE_WAY);
-        }
-        
-        boolean isGroupAssigned = true;
-        if (isClassAssigned) {
-            isGroupAssigned = groups.add(group);
-            if (isGroupAssigned) {
-                int newCapacity = getCapacity() + group.getCapacity();
-                setCapacity(newCapacity);
-            }
-        }
-        
-        return isGroupAssigned && isClassAssigned;
+        return isGroupAdded;
     }
     
-    //@Override
-    public boolean unassign(Group group, AssignPolicy policy) {
+    public boolean removeGroup(Group group) {
         if (group == null) {
             return false;
         }
@@ -303,48 +388,20 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
         if (!groups.contains(group)) {
             return false;
         }
+
+        RemoveGroupEvent removeGroupEvent = new RemoveGroupEvent(this, group);
+        notifyObservers(removeGroupEvent);
+
+        boolean isGroupRemoved = groups.remove(group);
         
-        // We are ok to remove the group so far. See if it is ok with us.
-        boolean isClassUnassigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassUnassigned = group.unassign(this, AssignPolicy.ONE_WAY);
+        if (isGroupRemoved) {
+            capacity -= group.getCapacity();
         }
         
-        boolean isGroupUnassigned = true;
-        if (isClassUnassigned) {
-            isGroupUnassigned = groups.remove(group);
-            if (isGroupUnassigned) {
-                int newCapacity = getCapacity() - group.getCapacity();
-                setCapacity(newCapacity);
-            }
-        }
-        
-        return isGroupUnassigned && isClassUnassigned;
+        return isGroupRemoved;
     }
-    
-    //@Override
-    public boolean update(Group group, UpdateReason reason) {
-        // TODO:
-        return true;
-    }
-    
-    @Override
-    public boolean unassignAllGroups() {
-        boolean areGroupsUnassigned = true;
-        
-        for (Group group : groups) {
-            boolean isGroupUnassigned = unassign(group, AssignPolicy.ONE_WAY);
-            areGroupsUnassigned = areGroupsUnassigned && isGroupUnassigned;
-        }
-        
-        groups.clear();
-        setCapacity(0);
-        
-        return areGroupsUnassigned;
-    }
-    
-    //@Override
-    public boolean assign(Room newRoom, AssignPolicy policy) {
+
+    public boolean place(Room newRoom, int newStartHour) {
         if (newRoom == null) {
             return false;
         }
@@ -353,77 +410,102 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
             return false;
         }
         
-        if (room != null && room.equals(newRoom)) {
+        if (newStartHour < 0 || Schedule.HOURS_PER_WEEK <= newStartHour + duration) {
             return false;
         }
         
-        // We are ok with the room so far. See if it is ok with us.
-        boolean isClassAssigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassAssigned = newRoom.assign(this, AssignPolicy.ONE_WAY);
-        }
+        boolean keepsRoom = newRoom.equals(room);
+        boolean keepsStartHour = (newStartHour == startHour);
         
-        boolean isRoomAssigned = true;
-        if (isClassAssigned) {
-            boolean isOldRoomUnassigned = unassign(room, AssignPolicy.BOTH_WAYS);
-            
-            boolean isNewRoomSet = setRoom(newRoom);
-            // TODO: Set new time placement and notify ???
-            
-            isRoomAssigned = isOldRoomUnassigned && isNewRoomSet;
-        }
-        
-        return isRoomAssigned && isClassAssigned;
-    }
-    
-    //@Override
-    // TODO: We do not need this argument
-    public boolean unassign(Room oldRoom, AssignPolicy policy) {
-        if (room == null) {
+        if (isPlaced() && keepsRoom && keepsStartHour) {
             return false;
         }
         
-        if (room.hasBadKey()) {
-            return false;
+        if (isPlaced() && !keepsRoom) {
+            displace();
         }
         
-        if (!room.equals(oldRoom)) {
-            return false;
-        }
+        room = newRoom;        
+        startHour = newStartHour;
         
-        // We are ok to remove the room so far. See if it is ok with us.
-        boolean isClassUnassigned = true;
-        if (policy == AssignPolicy.BOTH_WAYS) {
-            isClassUnassigned = room.unassign(this, AssignPolicy.ONE_WAY);
-        }
+        PlaceEvent placeEvent = new PlaceEvent(this, keepsRoom, keepsStartHour);
+        notifyObservers(placeEvent);
         
-        boolean isRoomUnassigned = true;
-        if (isClassUnassigned) {
-            isRoomUnassigned = setRoom(null);
-            // TODO: Reset time placement and notify ???
-        }
-        
-        return isRoomUnassigned && isClassUnassigned;
-    }
-    
-    //@Override
-    public boolean update(Room room, UpdateReason reason) {
-        // TODO:
         return true;
     }
     
-    @Override
-    public boolean unassignAllRooms() {
-        boolean isRoomUnassigned = unassign(room, AssignPolicy.BOTH_WAYS);
-        return isRoomUnassigned;
+    public boolean displace() {
+        if (isPlaced()) {
+            DisplaceEvent displaceEvent = new DisplaceEvent(this);
+            notifyObservers(displaceEvent);
+            
+            room = null;
+            startHour = -1;
+
+            return true;
+        } else {
+            return false;
+        }
     }
     
-    public boolean unassignAll() {
-        boolean areAllLecturersUnassigned = unassignAllLecturers();
-        boolean areAllGroupsUnassigned = unassignAllGroups();
-        boolean areAllRoomsUnassigned = unassignAllRooms();
+    public boolean removeAll() {
+        HashSet<Lecturer> lecturersCopy = new HashSet<>(lecturers);
+        for (Lecturer lecturer : lecturersCopy) {
+            removeLecturer(lecturer);
+        }
         
-        return areAllLecturersUnassigned && areAllGroupsUnassigned && areAllRoomsUnassigned;
+        HashSet<Group> groupsCopy = new HashSet<>(groups);
+        for (Group group : groupsCopy) {
+            removeGroup(group);
+        }
+        
+        if (isPlaced()) {
+            displace();
+        }
+        
+        return true;
+    }
+    
+    public boolean merge(UniversityClass other) {
+        if (other == null) {
+            return false;
+        }
+        
+        if (getType() != other.getType()) {
+            return false;
+        }
+        
+        if (getDuration() != other.getDuration()) {
+            return false;
+        }
+        
+        capacity += other.getCapacity();
+        
+        for (String attribute : other.getAttributes()) {
+            addAttribute(attribute);
+        }
+        
+        boolean areGroupsTransferred = true;
+        for (Group group : other.getGroups()) {
+            boolean isGroupTransferred = addGroup(group);
+            areGroupsTransferred = areGroupsTransferred && isGroupTransferred;
+        }
+
+        return areGroupsTransferred;
+    }
+    
+    protected void notifyObservers(IClassEvent event) {       
+        for (Lecturer lecturer : lecturers) {
+            event.notifyObserver(lecturer);
+        }
+        
+        for (Group group : groups) {
+            event.notifyObserver(group);
+        }
+        
+        if (isPlaced()) {
+            event.notifyObserver(room);
+        }
     }
     
     private static final String LECTION_SUFFIX = ": Лекция";
@@ -459,21 +541,4 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
     
     // Who teaches the class
     private Set<Lecturer> lecturers;
-    
-    private boolean setRoom(Room newRoom) {
-        room = newRoom;
-        
-        boolean areEveryoneOK = true;
-        for (Lecturer lecturer : lecturers) {
-            boolean isLecturerOK = lecturer.update(this, UpdateReason.CHANGE_ROOM);
-            areEveryoneOK = areEveryoneOK && isLecturerOK;
-        }
-
-        for (Group group : groups) {
-            boolean isGroupOK = group.update(this, UpdateReason.CHANGE_ROOM);
-            areEveryoneOK = areEveryoneOK && isGroupOK;
-        }
-        
-        return areEveryoneOK;
-    }
 }

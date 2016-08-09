@@ -8,6 +8,7 @@ package utilities;
  *
  * @author Mavrov
  */
-public class Observation {
-    
+public class Observation<T> {
+
+    private T observable;
 }

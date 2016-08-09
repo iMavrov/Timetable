@@ -4,7 +4,6 @@
  */
 package university;
 
-import utilities.AssignPolicy;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -81,10 +80,10 @@ public class Semester implements IPersistable {
             return false;
         }
         
-        boolean areAllClassesUnassigned = oldRoom.unassignAllClasses();
+        boolean areClassesRemoved = oldRoom.removeClasses();
         boolean isRoomRemoved = rooms.remove(oldRoom);
         
-        return areAllClassesUnassigned && isRoomRemoved;
+        return areClassesRemoved && isRoomRemoved;
     }
     
     public Set<Room> getRooms() {
@@ -112,10 +111,10 @@ public class Semester implements IPersistable {
             return false;
         }
         
-        boolean areAllClassesUnassigned = oldLecturer.unassignAllClasses();
+        boolean areClassesRemoved = oldLecturer.removeClasses();
         boolean isLecturerRemoved = lecturers.remove(oldLecturer);
         
-        return areAllClassesUnassigned && isLecturerRemoved;
+        return areClassesRemoved && isLecturerRemoved;
     }
     
     public Set<Lecturer> getLecturers() {
@@ -251,14 +250,14 @@ public class Semester implements IPersistable {
                         if (seminarClass != null) {
                             classes.add(seminarClass);
 
-                            group.assign(seminarClass, AssignPolicy.BOTH_WAYS);
+                            seminarClass.addGroup(group);
                         }
 
                         UniversityClass labClass = subject.createNewClass(UniversityClassType.LABORATORY);
                         if (labClass != null) {
                             classes.add(labClass);
 
-                            group.assign(labClass, AssignPolicy.BOTH_WAYS);
+                            labClass.addGroup(group);
                         }
                     }
                 }
@@ -275,7 +274,7 @@ public class Semester implements IPersistable {
                         classes.add(lectionClass);
 
                         for (Group group : newGroups) {
-                            group.assign(lectionClass, AssignPolicy.BOTH_WAYS);
+                            lectionClass.addGroup(group);
                         }
                     }
                 }
@@ -299,7 +298,7 @@ public class Semester implements IPersistable {
         }
         
         for (Group group : groupsToRemove) {
-            group.unassignAllClasses();
+            group.removeClasses();
             groups.remove(group);
         }
         
@@ -313,7 +312,7 @@ public class Semester implements IPersistable {
         }
         
         for (UniversityClass universityClass : classesToRemove) {
-            universityClass.unassignAll();
+            universityClass.removeAll();
             classes.remove(universityClass);
         }
 
@@ -403,7 +402,7 @@ public class Semester implements IPersistable {
         }
         
         for (UniversityClass universityClass : classesToRemove) {
-            universityClass.unassignAll();
+            universityClass.removeAll();
             classes.remove(universityClass);
         }
         
@@ -452,7 +451,7 @@ public class Semester implements IPersistable {
         
         boolean areAllClassesRemoved = true;
         for (UniversityClass universityClass : classesToRemove) {
-            boolean isClassUnassigned = universityClass.unassignAll();
+            boolean isClassUnassigned = universityClass.removeAll();
             boolean isClassRemoved = classes.remove(universityClass);
             areAllClassesRemoved = areAllClassesRemoved && (isClassUnassigned && isClassRemoved);
         }
@@ -485,7 +484,7 @@ public class Semester implements IPersistable {
             return false;
         }
         
-        return universityClass.assign(lecturer, AssignPolicy.BOTH_WAYS);
+        return universityClass.addLecturer(lecturer);
     }
     
     public boolean unassignLecturerFromClass(Lecturer lecturer, UniversityClass universityClass) {
@@ -493,7 +492,7 @@ public class Semester implements IPersistable {
             return false;
         }
         
-        return universityClass.unassign(lecturer, AssignPolicy.BOTH_WAYS);
+        return universityClass.removeLecturer(lecturer);
     }
     
     public boolean removeClass(UniversityClass universityClass) {
@@ -501,48 +500,19 @@ public class Semester implements IPersistable {
             return false;
         }
         
-        return universityClass.unassignAll();
+        return universityClass.removeAll();
         // TODO: universityClass = null; ???
     }
     
     public boolean mergeClasses(UniversityClass class1, UniversityClass class2) {
-        if ((class1 == null) || (class2 == null)) {
-            return false;
-        }
-        
-        if (class1.getType() != class2.getType()) {
-            return false;
-        }
-        
-        if (class1.getDuration() != class2.getDuration()) {
+        if (class1 == null) {
             return false;
         }
 
-        boolean isMergeOK = true;
-        
-        class1.setCapacity(class1.getCapacity() + class2.getCapacity());
-        
-        for (String attribute : class2.getAttributes()) {
-            class1.addAttribute(attribute);
-        }
-        
-//        List<Integer> class1GroupIDs = classToStudents.get(classID1);
-//        List<Integer> class2GroupIDs = classToStudents.get(classID2);
-//        
-//        for (Integer class2GroupID : class2GroupIDs) {
-//            class1GroupIDs.add(class2GroupID);
-//            studentsToClass.get(class2GroupID).add(classID1);
-//        }
-        
-        boolean areGroupsTransferred = true;
-        for (Group group : class2.getGroups()) {
-            boolean isGroupTransferred = class1.assign(group, AssignPolicy.BOTH_WAYS);
-            areGroupsTransferred = areGroupsTransferred && isGroupTransferred;
-        }
-
+        boolean isMergeOK = class1.merge(class2);
         boolean isClass2Removed = removeClass(class2);
 
-        return areGroupsTransferred && isClass2Removed;
+        return isMergeOK && isClass2Removed;
     }
        
     public Set<Lecturer> filterLecturers(int departmentID) {
