@@ -12,14 +12,14 @@ import utilities.FilterCriterion;
  */
 public class DepartmentFilterCriterion implements FilterCriterion<Lecturer> {
 
-    public DepartmentFilterCriterion(int departmentID) {
-        this.departmentID = departmentID;
+    public DepartmentFilterCriterion(Department targetDepartment) {
+        department = targetDepartment;
     }
     
     @Override
     public boolean passes(Lecturer lecturer) {
-        return (lecturer.getDepartmentID() == departmentID);
+        return lecturer.getDepartment().equals(department);
     }
     
-    private int departmentID;
+    private Department department;
 }

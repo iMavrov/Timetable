@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
+import utilities.SystemIDType;
 
 /**
  *
@@ -14,7 +15,7 @@ import java.util.Objects;
 public class Room extends ScheduleHolder {
     
     public Room() {
-        super();
+        super(SystemIDType.ROOM_ID);
         
         building = null;
         name = "";
@@ -29,7 +30,7 @@ public class Room extends ScheduleHolder {
             RoomType roomType, 
             int roomCapacity,
             Set<String> roomAttributes) {
-        super();
+        super(SystemIDType.ROOM_ID);
         
         building = roomBuilding;
         name = roomName;
@@ -69,28 +70,6 @@ public class Room extends ScheduleHolder {
     public void setCapacity(int newCapacity) {
         capacity = newCapacity;
     }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        
-        final Room other = (Room)o;
-        return (building == other.building) && name.equals(other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 83 * hash + building.hashCode();
-        hash = 83 * hash + Objects.hashCode(name);
-        return hash;
-    }
 
     @Override
     public String toString() {
@@ -116,7 +95,7 @@ public class Room extends ScheduleHolder {
             writer.newLine();
         }
         */
-        return true;
+        return false;
     }
     
     @Override
@@ -133,7 +112,7 @@ public class Room extends ScheduleHolder {
             --attributeCount;
         }
         */
-        return true;
+        return false;
     }
     
     @Override

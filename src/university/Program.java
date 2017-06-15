@@ -6,14 +6,18 @@ import java.io.BufferedWriter;
 import java.util.List;
 import java.util.Objects;
 import java.util.ArrayList;
+import utilities.SystemIDType;
+import utilities.SystemObject;
 
 /**
  *
  * @author Mavrov
  */
-public class Program implements IPersistable, IKeyHolder {
+public class Program extends SystemObject implements IPersistable, IKeyHolder {
     
     public Program() {
+        super(SystemIDType.PROGRAM_ID);
+                
         degree = EducationDegree.BACHELOR;
         model = EducationModel.REGULAR;
         name = "";
@@ -28,6 +32,8 @@ public class Program implements IPersistable, IKeyHolder {
             int programYear,
             int programDuration,
             List<List<Subject>> subjectsBySemesters) {
+        super(SystemIDType.PROGRAM_ID);
+        
         degree = programDegree;
         model = programModel;
         name = programName;

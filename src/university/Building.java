@@ -4,26 +4,26 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.Objects;
+import utilities.SystemIDType;
+import utilities.SystemObject;
 
 /**
  * Represents a faculty building of the university's campus.
   * 
  * @author Mavrov
  */
-public class Building implements IPersistable, IKeyHolder {
+public class Building extends SystemObject implements IPersistable, IKeyHolder {
     
     public Building() {
-        id = University.INVALID_ID;
+        super(SystemIDType.BUILDING_ID);
+        
         name = "";
     }
     
     public Building(int buildingID, String buildingName) {
-        id = buildingID;
+        super(SystemIDType.BUILDING_ID);
+        
         name = buildingName;
-    }
-    
-    public int getID() {
-        return id;
     }
     
     public String getName() {
@@ -40,29 +40,8 @@ public class Building implements IPersistable, IKeyHolder {
     }
     
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        
-        final Building other = (Building)o;
-        return name.equalsIgnoreCase(other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 23 * hash + Objects.hashCode(name);
-        return hash;
-    }
-    
-    @Override
     public boolean load(BufferedReader reader) throws IOException {
-        id = Integer.valueOf(reader.readLine());
+        id.load(reader);
         name = reader.readLine();
         
         return true;
@@ -70,8 +49,7 @@ public class Building implements IPersistable, IKeyHolder {
 
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
-        writer.write(String.valueOf(id));
-        writer.newLine();
+        id.save(writer);
         
         writer.write(name);
         writer.newLine();
@@ -84,6 +62,5 @@ public class Building implements IPersistable, IKeyHolder {
         return (name == null) || name.isEmpty();
     }
     
-    private int id;
     private String name;
 }

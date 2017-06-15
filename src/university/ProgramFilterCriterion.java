@@ -18,7 +18,7 @@ public class ProgramFilterCriterion implements FilterCriterion<UniversityClass> 
     
     @Override
     public boolean passes(UniversityClass item) {
-        return (item.getSubject().getProgram() == program);
+        return (item.getSubject().getProgram().equals(program));
     }
     
     private Program program;

@@ -22,6 +22,11 @@ public class Filter<T extends Object, C extends Collection<T>> {
         criteria = new ArrayList<>();
     }
     
+    public Filter(FilterCriterion<T> newCriterion) {
+        criteria = new ArrayList<>();
+        criteria.add(newCriterion);
+    }
+    
     public boolean addCriterion(FilterCriterion<T> newCriterion) {
         return criteria.add(newCriterion);
     }

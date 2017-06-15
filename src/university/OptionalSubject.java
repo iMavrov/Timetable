@@ -9,9 +9,7 @@ package university;
  * @author Mavrov
  */
 public class OptionalSubject extends Subject {
-    
-    
-    
+
     private SubjectCategory category;
     private int capacity;
 }

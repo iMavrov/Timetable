@@ -8,6 +8,10 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.ArrayList;
+import utilities.Filter;
+import utilities.FilterCriterion;
+import utilities.SystemID;
+import utilities.SystemIDType;
 
 /**
  *
@@ -25,6 +29,7 @@ public class University implements IPersistable {
         return university;
     }
     
+    
     public boolean addBuilding(Building newBuilding) {
         if (newBuilding == null) {
             return false;
@@ -34,11 +39,24 @@ public class University implements IPersistable {
             return false;
         }
         
-        if (buildings.contains(newBuilding)) {
+        buildings.
+        
+        final String newBuildingName = newBuilding.getName();
+        Filter buildingNameFilter = new Filter(new FilterCriterion<Building>() {
+            @Override
+            public boolean passes(Building building) {
+                return building.getName().equals(newBuildingName);
+            }
+        });
+        
+        List<Building> duplicateBuildingNameList = new ArrayList<>();
+        buildingNameFilter.filterList(buildings, duplicateBuildingNameList);
+        
+        if (duplicateBuildingNameList.isEmpty()) {
+            return buildings.add(newBuilding);
+        } else {
             return false;
         }
-        
-        return buildings.add(newBuilding);
     }
     
     public boolean updateBuilding(Building updatedBuilding) {
@@ -56,17 +74,26 @@ public class University implements IPersistable {
         if ((firstIndex == -1) || (lastIndex == -1) || (firstIndex != lastIndex)) {
             return false;
         }
-                
+        
         buildings.set(firstIndex, updatedBuilding);
         return true;
     }
     
-    public Building getBuilding(int buildingID) {
-        if (buildingID < 0 || buildings.size() <= buildingID) {
+    public Building getBuilding(SystemID buildingID) {
+        if (buildingID.getType() != SystemIDType.BUILDING_ID) {
             return null;
         }
         
-        return buildings.get(buildingID);
+        int index = buildingID.getIndex();
+        if (index < 0 || buildings.size() <= index) {
+            return null; 
+       }
+        
+        Building result = buildings.get(index);
+        
+        boolean doubleCheck = result.getID().equals(buildingID);
+        
+        return result;
     }
     
     public boolean addRoom(Room newRoom) {

@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.Objects;
 import university.UniversityClass.AddLecturerEvent;
 import university.UniversityClass.RemoveLecturerEvent;
+import utilities.SystemID;
+import utilities.SystemIDType;
 
 /**
  * Represents a university lecturer.
@@ -16,39 +18,39 @@ import university.UniversityClass.RemoveLecturerEvent;
 public class Lecturer extends ScheduleHolder {
     
     public Lecturer() {
-        super();
+        super(SystemIDType.LECTURER_ID);
         
-        facultyID = University.INVALID_ID;
-        departmentID = University.INVALID_ID;
+        faculty = null;
+        department = null;
         name = "";
     }
     
     public Lecturer(
-            int lecturerFacultyID, 
-            int lecturerDepartmentID,
+            Faculty lecturerFaculty, 
+            Department lecturerDepartment,
             String lecturerName,
             Set<String> lecturerAttributes) {
-        super();
+        super(SystemIDType.LECTURER_ID);
         
-        facultyID = lecturerFacultyID;
-        departmentID = lecturerDepartmentID;
+        faculty = lecturerFaculty;
+        department = lecturerDepartment;
         name = lecturerName;
     }
     
-    public int getFacultyID() {
-        return facultyID;
+    public Faculty getFaculty() {
+        return faculty;
     }
 
-    public void setFaculty(int newLecturerFacultyID) {
-        facultyID = newLecturerFacultyID;
+    public void setFaculty(Faculty newLecturerFaculty) {
+        faculty = newLecturerFaculty;
     }
 
-    public int getDepartmentID() {
-        return departmentID;
+    public Department getDepartment() {
+        return department;
     }
 
-    public void setDepartmentID(int lecturerDepartmentID) {
-        departmentID = lecturerDepartmentID;
+    public void setDepartmentID(Department lecturerDepartment) {
+        department = lecturerDepartment;
     }
 
     public String getName() {
@@ -59,29 +61,6 @@ public class Lecturer extends ScheduleHolder {
         name = lecturerName;
     }
     
-    // From Object
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        
-        final Lecturer other = (Lecturer)o;
-        return (departmentID == other.departmentID) && name.equalsIgnoreCase(other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 41 * hash + this.departmentID;
-        hash = 41 * hash + Objects.hashCode(this.name);
-        return hash;
-    }
-    
     @Override
     public String toString() {
         return name;
@@ -90,10 +69,9 @@ public class Lecturer extends ScheduleHolder {
     // From IPersistable
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
-        writer.write(String.valueOf(facultyID));
-        writer.newLine();
-        writer.write(String.valueOf(departmentID));
-        writer.newLine();
+        faculty.getID().save(writer);
+        department.getID().save(writer);
+        
         writer.write(name);
         writer.newLine();
         
@@ -109,8 +87,14 @@ public class Lecturer extends ScheduleHolder {
     
     @Override
     public boolean load(BufferedReader reader) throws IOException {
-        facultyID = Integer.valueOf(reader.readLine());
-        departmentID = Integer.valueOf(reader.readLine());
+        SystemID facultyID = new SystemID();
+        facultyID.load(reader);
+        faculty = University.getInstance().getFaculty(facultyID.getIndex());
+        
+        SystemID departmentID = new SystemID();
+        departmentID.load(reader);
+        department = University.getInstance().getDepartment(departmentID.getIndex());
+
         name = reader.readLine();
 
         int attributeCount = Integer.valueOf(reader.readLine());
@@ -125,7 +109,7 @@ public class Lecturer extends ScheduleHolder {
     // From IAttributeHolder
     @Override
     public boolean hasBadKey() {
-        return (departmentID == University.INVALID_ID) || name.isEmpty();
+        return (department == null) || name.isEmpty();
     }
     
     // From ScheduleHolder
@@ -180,12 +164,13 @@ public class Lecturer extends ScheduleHolder {
         return universityClass.removeLecturer(this);
     }
     
-    // LecturerData position info
-    private int facultyID;
-    private int departmentID;
+    // Lecturer position info
+    private Faculty faculty;
+    private Department department;
     
-    // LecturerData info
+    // Lecturer info
     private String name;
     
+    // Can be inferred from the null faculty and department
     //private boolean isStateLecturer;
 }

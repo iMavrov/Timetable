@@ -3,19 +3,24 @@ package university;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.util.Objects;
+import utilities.SystemIDType;
+import utilities.SystemObject;
 
 /**
  *
  * @author Mavrov
  */
-public class Faculty implements IPersistable, IKeyHolder {
+public class Faculty extends SystemObject implements IPersistable, IKeyHolder {
     
     public Faculty() {
+        super(SystemIDType.FACULTY_ID);
+        
         name = "";
     }
     
     public Faculty(String facultyName) {
+        super(SystemIDType.FACULTY_ID);
+        
         name = facultyName;
     }
     
@@ -30,27 +35,6 @@ public class Faculty implements IPersistable, IKeyHolder {
     @Override
     public String toString() {
         return name;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        
-        final Faculty other = (Faculty)o;
-        return name.equalsIgnoreCase(other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.name);
-        return hash;
     }
     
     @Override

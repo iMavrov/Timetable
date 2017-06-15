@@ -4,18 +4,24 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.Objects;
+import utilities.SystemIDType;
+import utilities.SystemObject;
 
 /**
  *
  * @author Mavrov
  */
-public class Department implements IPersistable, IKeyHolder {
+public class Department extends SystemObject implements IPersistable, IKeyHolder {
     
     public Department() {
+        super(SystemIDType.DEPARTMENT_ID);
+        
         name = "";
     }
     
     public Department(String departmentName) {
+        super(SystemIDType.DEPARTMENT_ID);
+        
         name = departmentName;
     }
     
@@ -31,28 +37,8 @@ public class Department implements IPersistable, IKeyHolder {
     public String toString() {
         return name;
     }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        
-        final Department other = (Department)o;
-        return name.equalsIgnoreCase(other.name);
-    }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 43 * hash + Objects.hashCode(this.name);
-        return hash;
-    }
-    
+    // From IPersistable
     @Override
     public boolean load(BufferedReader reader) throws IOException {
         name = reader.readLine();

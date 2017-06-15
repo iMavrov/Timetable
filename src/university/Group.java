@@ -7,6 +7,7 @@ package university;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import utilities.SystemIDType;
 
 /**
  *
@@ -15,7 +16,7 @@ import java.io.BufferedWriter;
 public class Group extends ScheduleHolder {
     
     public Group() {
-        super();
+        super(SystemIDType.GROUP_ID);
         
         program = null;
         
@@ -27,7 +28,7 @@ public class Group extends ScheduleHolder {
     }
     
     public Group(Program groupProgram, int yearNumber, int divisionNumber, int groupNumber, int groupCapacity) {
-        super();
+        super(SystemIDType.GROUP_ID);
         
         program = groupProgram;
         
@@ -87,37 +88,13 @@ public class Group extends ScheduleHolder {
     }
     
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        
-        final Group other = (Group)o;
-        return (program == other.program) && (year == other.year) && (division == other.division) && (group == other.group);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        // TODO: hash = 13 * hash + this.programID;
-        hash = 13 * hash + this.year;
-        hash = 13 * hash + this.division;
-        hash = 13 * hash + this.group;
-        return hash;
-    }
-    
-    @Override
     public boolean load(BufferedReader reader) throws IOException {
-        return true;
+        return false;
     }
 
     @Override
     public boolean save(BufferedWriter writer) throws IOException {
-        return true;
+        return false;
     }
     
     @Override

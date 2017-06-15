@@ -2,6 +2,8 @@ package university;
 
 import java.util.Set;
 import java.util.HashSet;
+import utilities.SystemIDType;
+import utilities.SystemObject;
 import university.UniversityClass.AddGroupEvent;
 import university.UniversityClass.AddLecturerEvent;
 import university.UniversityClass.PlaceEvent;
@@ -9,14 +11,17 @@ import university.UniversityClass.DisplaceEvent;
 import university.UniversityClass.RemoveGroupEvent;
 import university.UniversityClass.RemoveLecturerEvent;
 
+
 /**
  *
  * @author Mavrov
  */
 
-public abstract class ScheduleHolder implements IPersistable, IKeyHolder, IAttributeHolder, IClassObserver {
+public abstract class ScheduleHolder extends SystemObject implements IPersistable, IKeyHolder, IAttributeHolder, IClassObserver {
     
-    public ScheduleHolder() {
+    public ScheduleHolder(SystemIDType systemObjectType) {
+        super(systemObjectType);
+        
         attributes = new HashSet<>();
         schedule = new Schedule();
         //classes = new HashSet<>();

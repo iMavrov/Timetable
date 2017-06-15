@@ -515,9 +515,9 @@ public class Semester implements IPersistable {
         return isMergeOK && isClass2Removed;
     }
        
-    public Set<Lecturer> filterLecturers(int departmentID) {
+    public Set<Lecturer> filterLecturers(Department targetDepartment) {
         Filter<Lecturer, Set<Lecturer>> lecturerFilter = new Filter<>();
-        lecturerFilter.addCriterion(new DepartmentFilterCriterion(departmentID));
+        lecturerFilter.addCriterion(new DepartmentFilterCriterion(targetDepartment));
         
         Set<Lecturer> filteredLecturers = new HashSet<>();
         return lecturerFilter.filterList(lecturers, filteredLecturers);
