@@ -20,12 +20,16 @@ public abstract class Speciment implements Comparable<Speciment> {
         return fitness;
     }
     
-    public void setFitness(int fitness) {
-        this.fitness = fitness;
+    public void updateFitness(FitnessEvaluator fitnessEvaluator) {
+        fitness = fitnessEvaluator.evaluateFitness(this);
     }
     
     @Override
     public int compareTo(Speciment other) {
+        if (other == null) {
+            throw new NullPointerException();
+        }
+        
         return other.getFitness() - getFitness();
     }
     

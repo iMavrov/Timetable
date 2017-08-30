@@ -1,15 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package timetable;
 
 /**
  *
  * @author Mavrov
+ * @param <T>
  */
 public interface FitnessEvaluator<T extends Speciment> {
     
-    public void evaluateFitness(T speciment);
+    public int evaluateFitness(T speciment);
     
 }

@@ -1,39 +1,39 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package timetable;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  *
  * @author Mavrov
+ * @param <T>
  */
-public class GeneticAlgorithm<T extends Speciment> {
+public class GeneticAlgorithm <T extends Speciment> {
     
-    public GeneticAlgorithm (GenericFactory<T> specimentFactory, 
-                             SpecimentSelector<T> crossSelector,
-                             SpecimentSelector<T> transferSelector,
-                             SpecimentSelector<T> mutationSelector,
-                             CrossOperator<T> crossOperator,
-                             MutationOperator<T> mutationOperator,
-                             FitnessEvaluator<T> fitnessEvaluator,
-                             Terminator terminator) {
-        this.specimentFactory = specimentFactory;
-        this.crossSelector = crossSelector;
-        this.transferSelector = transferSelector;
-        this.mutationSelector = mutationSelector;
-        this.crossOperator = crossOperator;
-        this.mutationOperator = mutationOperator;
-        this.fitnessEvaluator = fitnessEvaluator;
-        this.terminator = terminator;
+    public GeneticAlgorithm (
+        GenericFactory<T> inputSpecimentFactory, 
+        SpecimentSelector<T> inputCrossSelector,
+        SpecimentSelector<T> inputTransferSelector,
+        SpecimentSelector<T> inputMutationSelector,
+        CrossoverOperator<T> inputCrossOperator,
+        MutationOperator<T> inputMutationOperator,
+        FitnessEvaluator<T> inputFitnessEvaluator,
+        Terminator inputTerminator
+    ) {
+        specimentFactory = inputSpecimentFactory;
+        crossSelector = inputCrossSelector;
+        transferSelector = inputTransferSelector;
+        mutationSelector = inputMutationSelector;
+        crossOperator = inputCrossOperator;
+        mutationOperator = inputMutationOperator;
+        fitnessEvaluator = inputFitnessEvaluator;
+        terminator = inputTerminator;
                 
         // Initialize population
-        population = new ArrayList<>(POPULATION_SIZE);
-        offspring = new ArrayList<>(POPULATION_SIZE);
-        for (int i = 0; i < POPULATION_SIZE; ++i) {
+        population = new ArrayList<>(Settings.POPULATION_SIZE);
+        offspring = new ArrayList<>(Settings.POPULATION_SIZE);
+        for (int i = 0; i < Settings.POPULATION_SIZE; ++i) {
             T newSpeciment;
             
             try {
@@ -58,11 +58,6 @@ public class GeneticAlgorithm<T extends Speciment> {
         
         System.out.println(statistics);
     }
-    
-    private static final int POPULATION_SIZE = 128;
-    private static final float REPRODUCTION_RATE = 0.5f;
-    private static final float MUTATION_RATE = 0.05f;
-    private static final int FITNESS_THRESHOLD = 1000;
 
     private List<T> population;
     private List<T> offspring;
@@ -71,7 +66,7 @@ public class GeneticAlgorithm<T extends Speciment> {
     private SpecimentSelector<T> crossSelector;
     private SpecimentSelector<T> transferSelector;
     private SpecimentSelector<T> mutationSelector;
-    private CrossOperator<T> crossOperator;
+    private CrossoverOperator<T> crossOperator;
     private MutationOperator<T> mutationOperator;
     private FitnessEvaluator<T> fitnessEvaluator;
     
@@ -79,16 +74,18 @@ public class GeneticAlgorithm<T extends Speciment> {
     private Terminator terminator;
     
     private void calculateNextGeneration() {
-        //// Prepare selection algorithms
+        //
         
-        crossSelector.updateSpeciments(population);
-        transferSelector.updateSpeciments(population);
+        Collections.sort(population);
         
-        //// Reproduce species
+        // Prepare selection algorithms
         
-        int speciesToReproduce = (int)(REPRODUCTION_RATE * POPULATION_SIZE);
-        speciesToReproduce &= 0xFFFFFFFE; // Make even number
+        //crossSelector.updateSpeciments(population);
+        //transferSelector.updateSpeciments(population);
         
+        // Reproduce species
+        
+        int speciesToReproduce = (int)(Settings.REPRODUCTION_RATE * Settings.POPULATION_SIZE);
         int couplesCount = speciesToReproduce / 2;
         while (couplesCount > 0) {
             List<T> parents = new ArrayList<>(2);
@@ -104,20 +101,20 @@ public class GeneticAlgorithm<T extends Speciment> {
             --couplesCount;
         }
         
-        //// Transfer species to offspring unchanged
+        // Transfer species to offspring unchanged
         
-        int speciesToTransfer = POPULATION_SIZE - speciesToReproduce;
+        int speciesToTransfer = Settings.POPULATION_SIZE - speciesToReproduce;
         while (speciesToTransfer > 0) {
             T selectedSpeciment = transferSelector.selectSpeciment();
             offspring.add(selectedSpeciment);
             --speciesToTransfer;
         }
         
-        //// Mutate offspring
+        // Mutate offspring
         
         mutationSelector.updateSpeciments(offspring);
         
-        int speciesToMutate = (int)(POPULATION_SIZE * MUTATION_RATE);
+        int speciesToMutate = (int)(Settings.POPULATION_SIZE * Settings.MUTATION_RATE);
         while (speciesToMutate > 0) {
             T specimentToMutate = mutationSelector.selectSpeciment();
             mutationOperator.mutate(specimentToMutate);
@@ -125,10 +122,10 @@ public class GeneticAlgorithm<T extends Speciment> {
             --speciesToMutate;
         }
         
-        //// Move to next iteration
-        
-        population.clear();
+        // Move to next iteration
+        List<T> swapHelper = population;
         population = offspring;
+        offspring = swapHelper;
         offspring.clear();
     }
 }

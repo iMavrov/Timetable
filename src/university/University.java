@@ -39,8 +39,6 @@ public class University implements IPersistable {
             return false;
         }
         
-        buildings.
-        
         final String newBuildingName = newBuilding.getName();
         Filter buildingNameFilter = new Filter(new FilterCriterion<Building>() {
             @Override

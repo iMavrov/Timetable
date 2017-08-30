@@ -171,10 +171,16 @@ public class Schedule implements IPersistable {
     public Set<UniversityClass> getClasses() {
         return classes;
     }
+    
+    public Availability getAvailability(int weekHourSlotIndex) {
+        return availability[weekHourSlotIndex];
+    }
 
     private static final UniversityClass AVAILABLE_SLOT = null;
     private static final UniversityClass UNAVAILABLE_SLOT = new UniversityClass();
     
     private UniversityClass[] slots;
     private Set<UniversityClass> classes;
+    
+    private Availability[] availability;
 }

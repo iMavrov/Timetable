@@ -241,6 +241,10 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
         return lecturers;
     }
     
+    public int getIndex() {
+        return index;
+    }
+    
     @Override
     public boolean load(BufferedReader reader) throws IOException {
         // TODO: Serialize subject id
@@ -541,4 +545,7 @@ public class UniversityClass implements IPersistable, IKeyHolder, IAttributeHold
     
     // Who teaches the class
     private Set<Lecturer> lecturers;
+    
+    // Placement index in the timetable
+    private int index;
 }

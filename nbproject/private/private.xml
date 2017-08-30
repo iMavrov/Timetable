@@ -1,41 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
-    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/ScheduleHolder.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Lecturer.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Group.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Room.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Schedule.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/UniversityClass.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/SystemID.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Semester.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/BidirectionalHashMap.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/IClassObserver.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/gui/CourseStructureFormFrame.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/CourseStructure.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/IObservable.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/IObserver.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/Observation.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/IRoomObserver.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/University.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Program.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/SystemIDType.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Faculty.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/SystemObject.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Department.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/DepartmentFilterCriterion.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/SubjectType.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/Building.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/Filter.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/FilterCriterion.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/EducationDegree.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/EducationModel.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/IGroupObserver.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/ILecturerObserver.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/IPersistable.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/OptionalSubject.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/ProgramFilterCriterion.java</file>
-        <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/university/RoomType.java</file>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/GenericFactory.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/Generator.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/Settings.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/ClassPlacement.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/FitnessEvaluator.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/SpecimentSelector.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/GeneticAlgorithm.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/Speciment.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/test/MainClass.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/utilities/Combinatorics.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/TimetableEvaluator.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/Timetable.java</file>
+            <file>file:/D:/My%20Documents/NetBeansProjects/Timetable/src/timetable/CrossoverOperator.java</file>
+        </group>
     </open-files>
 </project-private>

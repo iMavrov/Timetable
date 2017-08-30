@@ -5,6 +5,7 @@ import java.util.List;
 /**
  *
  * @author Mavrov
+ * @param <T>
  */
 public interface SpecimentSelector<T extends Speciment> {
     

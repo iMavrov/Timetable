@@ -27,6 +27,10 @@ public abstract class ScheduleHolder extends SystemObject implements IPersistabl
         //classes = new HashSet<>();
     }
     
+    public Schedule getSchedule() {
+        return schedule;
+    }
+    
     // From IAttributeHolder
     @Override
     public boolean addAttribute(String attribute) {

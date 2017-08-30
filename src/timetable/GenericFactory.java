@@ -1,12 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package timetable;
 
 /**
  *
  * @author Mavrov
+ * @param <T>
  */
 public class GenericFactory<T> {
     
@@ -18,5 +15,5 @@ public class GenericFactory<T> {
         return genericTypeClass.newInstance();
     }
     
-    private Class<T> genericTypeClass;
+    private final Class<T> genericTypeClass;
 }
