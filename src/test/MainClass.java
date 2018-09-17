@@ -6,10 +6,13 @@ import javax.swing.SwingUtilities;
 import gui.MainFrame;
 */
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import timetable.*;
-import university.Room;
+import utilities.Combinatorics;
 import university.UniversityClass;
 
 /**
@@ -41,16 +44,28 @@ public class MainClass {
         }
         */
         
+        /*
         List<Integer> summands = new ArrayList<>();
         summands.add(2);
         summands.add(3);
         summands.add(5);
         
-        List<int[]> partitions = Timetable.getPartitions(summands, Settings.LATEST_CLASS_END - Settings.EARLIEST_CLASS_START); 
+        List<int[]> partitions = Combinatorics.getPartitions(summands, Settings.WORKHOURS_PER_DAY); 
+        */
         
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < 100; ++i) {
+            list.add(i);
+        }
+        Collections.shuffle(list);
+        
+        int median = utilities.Statistics.getMedian(list);
+        System.out.println(median);
+        
+        /*
         // Basic sanity check
         int providedTimeCapacity = 
-            University.getInstance().getRoomCount() * 
+            University.getInstance().getRooms().size() * 
             Settings.WORKHOURS_PER_DAY * Settings.WORKDAYS_PER_WEEK;
         
         int requiredTimeCapacity = 0;
@@ -65,6 +80,8 @@ public class MainClass {
         // Initialize once the random generator
         Generator.initialize();
         
+        Timetable.initialize();
+        
         GenericFactory<Timetable> timetableFactory = new GenericFactory<>(Timetable.class);
         
         SpecimentSelector<Timetable> crossSelector = null;
@@ -75,13 +92,14 @@ public class MainClass {
         FitnessEvaluator<Timetable> fitnessEvaluator = null;
         Terminator terminator = null;
         
-        GeneticAlgorithm<Timetable> a = new GeneticAlgorithm<>(
+        GeneticAlgorithm<Timetable> ga = new GeneticAlgorithm<>(
             timetableFactory, 
             crossSelector, transferSelector, mutationSelector,
             crossOperator, mutationOperator, fitnessEvaluator,
             terminator
         );
         
-        a.runAlgorithm();
+        ga.runAlgorithm();
+        */
     }
 }

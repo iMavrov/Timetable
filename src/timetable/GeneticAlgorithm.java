@@ -34,17 +34,8 @@ public class GeneticAlgorithm <T extends Speciment> {
         population = new ArrayList<>(Settings.POPULATION_SIZE);
         offspring = new ArrayList<>(Settings.POPULATION_SIZE);
         for (int i = 0; i < Settings.POPULATION_SIZE; ++i) {
-            T newSpeciment;
-            
-            try {
-                newSpeciment = specimentFactory.newInstance();
-            } catch (IllegalAccessException | InstantiationException ex) {
-                System.err.println(ex.getMessage());
-                --i;
-                continue;
-            }
-            
-            fitnessEvaluator.evaluateFitness(newSpeciment);
+            T newSpeciment = specimentFactory.newInstance();
+            newSpeciment.updateFitness(fitnessEvaluator);
             population.add(newSpeciment);
         }
         
@@ -74,29 +65,30 @@ public class GeneticAlgorithm <T extends Speciment> {
     private Terminator terminator;
     
     private void calculateNextGeneration() {
-        //
+        // 
         
         Collections.sort(population);
         
         // Prepare selection algorithms
         
-        //crossSelector.updateSpeciments(population);
-        //transferSelector.updateSpeciments(population);
+        crossSelector.updateSpeciments(population);
+        transferSelector.updateSpeciments(population);
         
         // Reproduce species
-        
         int speciesToReproduce = (int)(Settings.REPRODUCTION_RATE * Settings.POPULATION_SIZE);
         int couplesCount = speciesToReproduce / 2;
         while (couplesCount > 0) {
-            List<T> parents = new ArrayList<>(2);
-            parents.add(crossSelector.selectSpeciment());
-            parents.add(crossSelector.selectSpeciment());
+            T parent0 = crossSelector.selectSpeciment();
+            T parent1 = crossSelector.selectSpeciment();
+            T child0 = specimentFactory.newInstance();
+            T child1 = specimentFactory.newInstance();
+            crossOperator.cross(parent0, parent1, child0, child1);
             
-            List<T> children = crossOperator.cross(parents);
-            for (T child : children) {
-                fitnessEvaluator.evaluateFitness(child);
-                offspring.add(child);
-            }
+            child0.updateFitness(fitnessEvaluator);
+            child1.updateFitness(fitnessEvaluator);
+            
+            offspring.add(child0);
+            offspring.add(child1);
             
             --couplesCount;
         }

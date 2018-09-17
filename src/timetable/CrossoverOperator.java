@@ -1,13 +1,12 @@
 package timetable;
 
-import java.util.List;
-
 /**
  *
  * @author Mavrov
+ * @param <T>
  */
 public interface CrossoverOperator<T extends Speciment> {
 
-    public List<T> cross(List<T> parents);
+    public boolean cross(T parent0, T parent1, T child0, T child1);
     
 }

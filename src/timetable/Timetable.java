@@ -6,6 +6,7 @@ import java.util.BitSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
@@ -16,6 +17,9 @@ import java.util.TreeSet;
 import utilities.Combinatorics;
 import university.Room;
 import university.UniversityClass;
+import utilities.RoomSlot;
+
+import utilities.IntervalTree;
 
 /**
  *
@@ -193,9 +197,52 @@ public class Timetable extends Speciment {
         return placement[classIndex];
     }
     
-    public void fix(BitSet conflictMap) {        
-        List<Room> rooms = University.getInstance().getRooms();
+    public void setClassPlacement(int classIndex, ClassPlacement newClassPlacement) {
+        placement[classIndex] = newClassPlacement;
+    }
+    
+    public void fix(BitSet conflictMap, List<RoomSlot> freeSlots) {
+        // Create a list of free slot starts and ends
+        List<RoomSlotEvent> freeSlotEvents = new LinkedList<>();
+        for (RoomSlot freeSlot : freeSlots) {
+            freeSlotEvents.add(new RoomSlotEvent(true, freeSlot.getStart(), freeSlot.getRoomIndex()));
+            freeSlotEvents.add(new RoomSlotEvent(false, freeSlot.getStart() + freeSlot.getLength(), freeSlot.getRoomIndex()));
+        }
         
+        // Sort the list
+        Collections.sort(freeSlotEvents);
+        
+        // Merge free adjacent slots in the same room
+        ListIterator<RoomSlotEvent> freeSlotEventIterator = freeSlotEvents.listIterator();
+        while (freeSlotEventIterator.hasNext()) {
+            RoomSlotEvent endEvent = freeSlotEventIterator.next();
+            
+            // The list should always contain an even number of events = 2 * number of slots.
+            // As long as we add or delete even number of elements this still holds.
+            assert freeSlotEventIterator.hasNext();
+            RoomSlotEvent startEvent = freeSlotEventIterator.next();
+            
+            if (
+                endEvent.position == startEvent.position &&
+                endEvent.roomIndex == startEvent.roomIndex &&
+                !endEvent.isStart && startEvent.isStart
+            ) {
+                freeSlotEventIterator.remove();
+                freeSlotEventIterator.previous();
+                freeSlotEventIterator.remove();
+            }
+        }
+        
+        new university.utilities.IntervalTree();
+        
+        // TODO: Reconstruct the slots as they are now probably fewer.
+        
+        /*
+        List<UniversityClass> universityClasses = Semester.getInstance().getClasses();
+        for ()
+        
+        
+        List<Room> rooms = University.getInstance().getRooms();
         for (Room room : rooms) {
             
             BitSet availability = new BitSet(Settings.HOURS_PER_WEEK);
@@ -246,8 +293,43 @@ public class Timetable extends Speciment {
                 }
             }
         }
+        */
+    }
+    
+    private class RoomSlotEvent implements Comparable<RoomSlotEvent> {
+        
+        @Override
+        public int compareTo(RoomSlotEvent rhs) {
+            int positionDifference = rhs.position - position;
+            if (positionDifference == 0) {
+                int roomIndexDifference = rhs.roomIndex - roomIndex;
+                if (roomIndexDifference == 0) {
+                    if (rhs.isStart == isStart) {
+                        return 0;
+                    } else {
+                        return rhs.isStart ? 1 : -1;
+                    }
+                } else {
+                    return roomIndexDifference;
+                }
+            } else {
+                return positionDifference;
+            }
+        }
+        
+        private final boolean isStart;
+        private final int position;
+        private final int slotIndex;
+        private final int roomIndex;
+        
+        private RoomSlotEvent(boolean inputIsStart, int inputPosition, int inputRoomIndex) {
+            isStart = inputIsStart;
+            position = inputPosition;
+            roomIndex = inputRoomIndex;
+        }
     }
 
+    /*
     // Note: We are using this particular arrangement because we want 
     // the natural ordering of the events to end classes 
     // before starting new once (in the same hour slot).
@@ -285,14 +367,7 @@ public class Timetable extends Speciment {
         private ClassEventType type;
         private int hour;
     }
-    
-    private class ClassCluster {
-        
-        private int startHour;
-        private int endHour;
-        private int requiredHours;
-        private List<Integer> classIndex;
-    }
+    */
     
     // Maps duration to a list of class indices with the same duration.
     private static Map<Integer, List<Integer>> durationClassIndexMap = null;

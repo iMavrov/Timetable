@@ -11,8 +11,16 @@ public class GenericFactory<T> {
         this.genericTypeClass = genericTypeClass;
     }
     
-    public T newInstance() throws InstantiationException, IllegalAccessException {
-        return genericTypeClass.newInstance();
+    public T newInstance() {
+        T result;
+        
+        try {
+            result = genericTypeClass.newInstance();
+        } catch (IllegalAccessException | InstantiationException ex) {
+            result = null;
+        }
+        
+        return result;
     }
     
     private final Class<T> genericTypeClass;

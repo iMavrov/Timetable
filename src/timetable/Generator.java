@@ -15,6 +15,10 @@ public class Generator {
         }
     }
     
+    public static boolean getBool() {
+        return generator.nextBoolean();
+    }
+    
     /*
      * Returns uniformly distributed random positive byte values
      */
